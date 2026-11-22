@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
@@ -30,12 +31,17 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
         ? CardDraft()
         : CardDraft(
             fy: (replace['fyStart'] as num).toInt(),
-            name: CardService.displayName(replace));
+            name: CardService.displayName(replace),
+            // Existing photos are loaded so either side can be changed on its own.
+            front: base64Decode(replace['imageBase64'] as String),
+            back: ((replace['backBase64'] ?? '') as String).isEmpty
+                ? null
+                : base64Decode(replace['backBase64'] as String));
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) => AlertDialog(
-          title: Text(replace == null ? 'Add card for ${widget.memberName}' : 'Replace card'),
+          title: Text(replace == null ? 'Add card for ${widget.memberName}' : 'Update card'),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
@@ -231,7 +237,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
           if (open)
             TextButton(
               onPressed: _busy ? null : () => _openForm(replace: c),
-              child: const Text('Replace'),
+              child: const Text('Update'),
             ),
         ],
       ),

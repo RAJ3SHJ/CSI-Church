@@ -310,7 +310,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
             const SizedBox(height: 20),
             _optionTile(
               Icons.credit_card_outlined,
-              'Monthly Collection Card',
+              'Monthly Subscription Cards',
               AppTheme.navy,
               () {
                 Navigator.pop(context);

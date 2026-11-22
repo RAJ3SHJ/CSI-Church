@@ -5,6 +5,8 @@ import '../../theme/app_theme.dart';
 import '../../services/card_service.dart';
 import '../card_viewer_screen.dart';
 
+/// Monthly Subscription: financial-year chips, and under each year the member's
+/// cards (Father, Mother, Wife...). Members can view the cards but not download.
 class DonationHistoryScreen extends StatefulWidget {
   const DonationHistoryScreen({super.key});
   @override
@@ -12,51 +14,26 @@ class DonationHistoryScreen extends StatefulWidget {
 }
 
 class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
-  String _selectedFilter = CardService.fyLabel(CardService.currentFyStart());
+  int _selectedFy = CardService.currentFyStart();
   String _memberId = '';
+  String _memberName = '';
 
   @override
   void initState() {
     super.initState();
-    _loadMemberId();
+    _loadMember();
   }
 
-  void _loadMemberId() async {
+  void _loadMember() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('members')
-          .doc(user.uid)
-          .get();
+      final doc = await FirebaseFirestore.instance.collection('members').doc(user.uid).get();
       if (mounted && doc.exists) {
-        setState(() => _memberId = doc.data()?['memberId'] ?? '');
+        setState(() {
+          _memberId = doc.data()?['memberId'] ?? '';
+          _memberName = doc.data()?['name'] ?? '';
+        });
       }
-    }
-  }
-
-  String _formatDate(dynamic timestamp) {
-    if (timestamp == null) return '-';
-    final dt = (timestamp as Timestamp).toDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}';
-  }
-
-  String _getMonth(dynamic timestamp) {
-    if (timestamp == null) return '';
-    final dt = (timestamp as Timestamp).toDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[dt.month - 1]} ${dt.year}';
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Tithe': return AppTheme.navy;
-      case 'Offering': return AppTheme.success;
-      case 'Building Fund': return AppTheme.gold;
-      case 'Special Fund': return const Color(0xFF7C3AED);
-      default: return AppTheme.navyMid;
     }
   }
 
@@ -68,73 +45,61 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         children: [
           _buildHeader(context),
           if (_memberId.isEmpty)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator(color: AppTheme.navy)),
-            )
+            const Expanded(child: Center(child: CircularProgressIndicator(color: AppTheme.navy)))
           else
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
-                    .collection('donations')
+                    .collection('membercards')
                     .where('memberId', isEqualTo: _memberId)
                     .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                        child: CircularProgressIndicator(color: AppTheme.navy));
-                  }
-
-                  if (snapshot.hasError) {
+                builder: (context, snap) {
+                  if (snap.hasError) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
-                        child: Text('Could not load donations: ${snapshot.error}',
-                            textAlign: TextAlign.center),
+                        child: Text('Could not load cards: ${snap.error}', textAlign: TextAlign.center),
                       ),
                     );
                   }
-                  final allDocs = [...(snapshot.data?.docs ?? [])]
-                    ..sort((a, b) {
-                      final ta = (a.data() as Map<String, dynamic>)['date'] as Timestamp?;
-                      final tb = (b.data() as Map<String, dynamic>)['date'] as Timestamp?;
-                      if (ta == null && tb == null) return 0;
-                      if (ta == null) return 1;
-                      if (tb == null) return -1;
-                      return tb.compareTo(ta);
-                    });
-                  final fyFilter = CardService.parseFyLabel(_selectedFilter);
-
-                  // Financial-year chips (April to March): current FY and the two before,
-                  // plus any older FY that has donations
-                  final curFy = CardService.currentFyStart();
-                  final fySet = <int>{curFy, curFy - 1, curFy - 2};
-                  for (final doc in allDocs) {
-                    final d = ((doc.data() as Map<String, dynamic>)['date'] as Timestamp?)?.toDate();
-                    if (d != null) fySet.add(CardService.fyStartOf(d));
+                  if (!snap.hasData) {
+                    return const Center(child: CircularProgressIndicator(color: AppTheme.navy));
                   }
-                  final years = (fySet.toList()..sort((a, b) => b.compareTo(a)))
-                      .map(CardService.fyLabel)
-                      .toList();
-
-                  // Calculate totals
-                  double total = 0;
-                  double thisMonth = 0;
-                  final now = DateTime.now();
-                  for (final doc in allDocs) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    final amount = (data['amount'] as num? ?? 0).toDouble();
-                    total += amount;
-                    final date = (data['date'] as Timestamp?)?.toDate();
-                    if (date != null && date.month == now.month && date.year == now.year) {
-                      thisMonth += amount;
-                    }
+                  final byYear = <int, List<Map<String, dynamic>>>{};
+                  for (final d in snap.data!.docs) {
+                    final m = d.data() as Map<String, dynamic>;
+                    final fy = (m['fyStart'] as num?)?.toInt();
+                    if (fy != null) byYear.putIfAbsent(fy, () => []).add(m);
                   }
-
+                  final cur = CardService.currentFyStart();
+                  final years = <int>{cur, cur - 1, cur - 2, ...byYear.keys}.toList()
+                    ..sort((a, b) => b.compareTo(a));
+                  final cards = [...(byYear[_selectedFy] ?? <Map<String, dynamic>>[])]
+                    ..sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));
                   return Column(
                     children: [
-                      _buildSummary(total, thisMonth, allDocs.length),
                       _buildFilterChips(years),
-                      if (fyFilter != null) _buildCardSection(fyFilter),
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                          children: [
+                            if (cards.isEmpty)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppTheme.border),
+                                ),
+                                child: Text(
+                                    'Monthly Subscription card for ${CardService.fyLabel(_selectedFy)} is not uploaded yet.',
+                                    style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                              ),
+                            for (final c in cards) _cardTile(c),
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -145,79 +110,59 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-  Widget _buildCardSection(int fy) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('membercards')
-          .doc(CardService.docId(_memberId, fy))
-          .snapshots(),
-      builder: (context, snap) {
-        if (snap.hasError || !snap.hasData) return const SizedBox.shrink();
-        final data = snap.data!.data() as Map<String, dynamic>?;
-        final b64 = data?['imageBase64'] as String?;
-        if (b64 == null) {
-          return Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.border),
+  Widget _cardTile(Map<String, dynamic> c) {
+    final name = CardService.displayName(c);
+    final hasBack = ((c['backBase64'] ?? '') as String).isNotEmpty;
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CardViewerScreen(
+            title: '$name · ${CardService.fyLabel(_selectedFy)}',
+            frontBase64: c['imageBase64'] as String,
+            backBase64: c['backBase64'] as String?,
+            fileName: '${_memberId}_${CardService.fyName(_selectedFy)}',
+          ),
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppTheme.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppTheme.navyLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.credit_card_rounded, color: AppTheme.navy, size: 24),
             ),
-            child: Text('Donation card for ${CardService.fyLabel(fy)} is not uploaded yet.',
-                style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
-          );
-        }
-        return GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CardViewerScreen(
-                title: 'Donation Card · ${CardService.fyLabel(fy)}',
-                imageBase64: b64,
-                fileName: '${_memberId}_${CardService.fyName(fy)}.jpg',
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name,
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                  const SizedBox(height: 2),
+                  Text(
+                      '${CardService.fyLabel(_selectedFy)}${hasBack ? ' · tap to flip' : ''}',
+                      style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                ],
               ),
             ),
-          ),
-          child: Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppTheme.border),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 46, height: 46,
-                  decoration: BoxDecoration(
-                    color: AppTheme.navyLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.credit_card_rounded, color: AppTheme.navy, size: 24),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('View Donation Card',
-                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-                      const SizedBox(height: 2),
-                      Text(CardService.fyLabel(fy),
-                          style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
-              ],
-            ),
-          ),
-        );
-      },
+            const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+          ],
+        ),
+      ),
     );
   }
 
@@ -232,70 +177,29 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: AppTheme.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.white, size: 20),
             padding: EdgeInsets.zero,
           ),
           const SizedBox(width: 8),
-          const Text('Donation History',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,
-                  color: AppTheme.white)),
+          const Text('Monthly Subscription',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.white)),
         ],
       ),
     );
   }
 
-  Widget _buildSummary(double total, double thisMonth, int count) {
-    return Container(
-      color: AppTheme.navy,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Row(
-        children: [
-          _summaryCard('Total Given', '₹${total.toStringAsFixed(0)}', Icons.favorite_outline),
-          const SizedBox(width: 10),
-          _summaryCard('This Month', '₹${thisMonth.toStringAsFixed(0)}', Icons.calendar_today_outlined),
-          const SizedBox(width: 10),
-          _summaryCard('Transactions', '$count', Icons.receipt_long_outlined),
-        ],
-      ),
-    );
-  }
-
-  Widget _summaryCard(String label, String value, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 16, color: Colors.white70),
-            const SizedBox(height: 6),
-            Text(value,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                    color: AppTheme.white)),
-            Text(label,
-                style: const TextStyle(fontSize: 10, color: Colors.white70)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChips(List<String> filters) {
+  Widget _buildFilterChips(List<int> years) {
     return Container(
       color: AppTheme.white,
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: filters.map((filter) {
-            final isSelected = _selectedFilter == filter;
+          children: years.map((fy) {
+            final isSelected = _selectedFy == fy;
             return GestureDetector(
-              onTap: () => setState(() => _selectedFilter = filter),
+              onTap: () => setState(() => _selectedFy = fy),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.only(right: 8),
@@ -304,90 +208,15 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   color: isSelected ? AppTheme.navy : AppTheme.navyLight,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(filter,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500,
+                child: Text(CardService.fyLabel(fy),
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                         color: isSelected ? AppTheme.white : AppTheme.navy)),
               ),
             );
           }).toList(),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDonationCard(Map<String, dynamic> data) {
-    final category = data['category'] as String? ?? '';
-    final amount = (data['amount'] as num? ?? 0).toDouble();
-    final mode = data['mode'] as String? ?? '';
-    final date = _formatDate(data['date']);
-    final color = _getCategoryColor(category);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(Icons.favorite_outline, color: color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(category,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary)),
-                const SizedBox(height: 3),
-                Text('$date · $mode',
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('₹${amount.toStringAsFixed(0)}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                      color: AppTheme.navy)),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppTheme.successLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text('Verified',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
-                        color: AppTheme.success)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.receipt_long_outlined, size: 64,
-              color: AppTheme.textSecondary.withValues(alpha: 0.4)),
-          const SizedBox(height: 16),
-          const Text('No donations found',
-              style: TextStyle(fontSize: 15, color: AppTheme.textSecondary)),
-        ],
       ),
     );
   }

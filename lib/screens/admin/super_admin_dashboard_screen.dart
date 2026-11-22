@@ -6,6 +6,7 @@ import 'send_notification_screen.dart';
 import 'role_management_screen.dart';
 import 'reports_screen.dart';
 import 'admin_events_screen.dart';
+import 'admin_contacts_screen.dart';
 
 class SuperAdminDashboardScreen extends StatefulWidget {
   const SuperAdminDashboardScreen({super.key});
@@ -342,6 +343,8 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
       {'icon': Icons.notifications_outlined, 'label': 'Send Notification', 'desc': 'Notify all members'},
       {'icon': Icons.event_outlined, 'label': 'Events', 'desc': 'Publish for members'},
       {'icon': Icons.campaign_outlined, 'label': 'Upcoming Events', 'desc': 'Publish for members'},
+      {'icon': Icons.notifications_none_outlined, 'label': 'Announcements', 'desc': 'Publish for members'},
+      {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us', 'desc': 'Names and phone numbers'},
     ];
 
     return GridView.builder(
@@ -363,6 +366,8 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
             if (index == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => SendNotificationScreen()));
             if (index == 4) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen()));
             if (index == 5) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 1)));
+            if (index == 6) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
+            if (index == 7) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
           },
           child: Container(
             padding: const EdgeInsets.all(14),

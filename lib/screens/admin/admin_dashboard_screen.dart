@@ -8,6 +8,7 @@ import 'add_donation_screen.dart';
 import 'search_filter_screen.dart';
 import 'category_management_screen.dart';
 import 'admin_events_screen.dart';
+import 'admin_contacts_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final String adminName;
@@ -491,6 +492,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {'icon': Icons.search_outlined, 'label': 'Search'},
       {'icon': Icons.event_outlined, 'label': 'Events'},
       {'icon': Icons.campaign_outlined, 'label': 'Upcoming Events'},
+      {'icon': Icons.notifications_none_outlined, 'label': 'Announcements'},
+      {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us'},
     ];
 
     return GridView.builder(
@@ -520,6 +523,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen()));
             } else if (label == 'Upcoming Events') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 1)));
+            } else if (label == 'Announcements') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
+            } else if (label == 'Contact Us') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
             }
           },
           child: Container(

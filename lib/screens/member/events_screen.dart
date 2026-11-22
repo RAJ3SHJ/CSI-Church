@@ -15,7 +15,7 @@ class _EventsScreenState extends State<EventsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -67,6 +67,7 @@ class _EventsScreenState extends State<EventsScreen>
               children: [
                 _buildEventsTab(),
                 _buildAnnouncementsTab(),
+                _buildEventsTab(collection: 'notices', emptyText: 'No announcements yet'),
               ],
             ),
           ),
@@ -94,7 +95,11 @@ class _EventsScreenState extends State<EventsScreen>
           AnimatedBuilder(
             animation: _tabController,
             builder: (_, __) => Text(
-                _tabController.index == 0 ? 'Events' : 'Upcoming Events',
+                _tabController.index == 0
+                    ? 'Events'
+                    : _tabController.index == 1
+                        ? 'Upcoming Events'
+                        : 'Announcements',
                 style: const TextStyle(fontSize: 18,
                     fontWeight: FontWeight.w600, color: AppTheme.white)),
           ),
@@ -116,14 +121,15 @@ class _EventsScreenState extends State<EventsScreen>
         tabs: const [
           Tab(text: 'Events'),
           Tab(text: 'Upcoming Events'),
+          Tab(text: 'Announcements'),
         ],
       ),
     );
   }
 
-  Widget _buildEventsTab() {
+  Widget _buildEventsTab({String collection = 'events', String emptyText = 'No events yet'}) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('events').snapshots(),
+      stream: FirebaseFirestore.instance.collection(collection).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: AppTheme.navy));
@@ -137,7 +143,7 @@ class _EventsScreenState extends State<EventsScreen>
             if (tb == null) return -1;
             return ta.compareTo(tb);
           });
-        if (docs.isEmpty) return _buildEmptyState('No events yet', Icons.event_outlined);
+        if (docs.isEmpty) return _buildEmptyState(emptyText, Icons.event_outlined);
 
         return ListView.separated(
           padding: const EdgeInsets.all(14),

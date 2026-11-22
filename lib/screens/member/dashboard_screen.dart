@@ -93,7 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _onServiceTap(String title) {
     switch (title) {
-      case 'Donation History':
+      case 'Monthly Subscription':
         Navigator.push(context, MaterialPageRoute(builder: (_) => const DonationHistoryScreen()));
         break;
       case 'Events':
@@ -123,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final memberId = _memberData?['memberId'] as String? ?? widget.memberId;
 
     final services = [
-      {'icon': Icons.favorite_outline, 'title': 'Donation History', 'color': AppTheme.navy},
+      {'icon': Icons.favorite_outline, 'title': 'Monthly Subscription', 'color': AppTheme.navy},
       {'icon': Icons.event_outlined, 'title': 'Events', 'color': AppTheme.navy},
       {'icon': Icons.volunteer_activism_outlined, 'title': 'Prayer Request', 'color': AppTheme.navy},
       {'icon': Icons.live_tv_outlined, 'title': 'Live Telecast', 'color': AppTheme.navy},
@@ -265,7 +265,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: AppTheme.navyLight,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Text('View Donation History',
+              child: const Text('View Monthly Subscription',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
                       color: AppTheme.navy)),
             ),

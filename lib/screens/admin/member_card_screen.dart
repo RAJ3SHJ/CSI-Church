@@ -1,14 +1,12 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../services/card_service.dart';
+import '../../widgets/card_draft_section.dart';
 import '../card_viewer_screen.dart';
 
-/// Admin / Super Admin: view, upload or replace a member's yearly card.
+/// Admin / Super Admin: view and add a member's Monthly Subscription cards.
+/// A member can have several cards per financial year (Father, Mother, Wife...).
 class MemberCardScreen extends StatefulWidget {
   final String memberId;
   final String memberName;
@@ -21,81 +19,76 @@ class MemberCardScreen extends StatefulWidget {
 class _MemberCardScreenState extends State<MemberCardScreen> {
   bool _busy = false;
 
-  Future<void> _upload(int fy, bool exists) async {
-    setState(() => _busy = true);
-    try {
-      // Resized and compressed by the picker to keep the file small.
-      final XFile? picked = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1000,
-        maxHeight: 2000,
-        imageQuality: 70,
-      );
-      if (picked == null) return;
-      final Uint8List bytes = await picked.readAsBytes();
-      if (bytes.length > 800 * 1024) {
-        _snack('Photo is too large even after shrinking. Please retake it closer or in better light.');
-        return;
-      }
-      if (!mounted) return;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text('Save card for ${widget.memberName}?'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${widget.memberId} · ${CardService.fyLabel(fy)}',
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                if (exists)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('This will replace the existing card for this year.',
-                        style: TextStyle(color: AppTheme.error)),
-                  ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 360),
-                  child: Image.memory(bytes, fit: BoxFit.contain),
-                ),
-                const SizedBox(height: 6),
-                Text('${(bytes.length / 1024).round()} KB',
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-              ],
+  void _snack(String m) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  }
+
+  /// Opens the upload form. [replace] prefills year and name of an existing card.
+  Future<void> _openForm({Map<String, dynamic>? replace}) async {
+    final draft = replace == null
+        ? CardDraft()
+        : CardDraft(
+            fy: (replace['fyStart'] as num).toInt(),
+            name: CardService.displayName(replace));
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: Text(replace == null ? 'Add card for ${widget.memberName}' : 'Replace card'),
+          content: SizedBox(
+            width: 420,
+            child: SingleChildScrollView(
+              child: CardDraftSection(
+                draft: draft,
+                lockFyAndName: replace != null,
+                onChanged: () => setD(() {}),
+              ),
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Save')),
+            TextButton(
+              onPressed: draft.isValid ? () => Navigator.pop(ctx, true) : null,
+              child: const Text('Save'),
+            ),
           ],
         ),
+      ),
+    );
+    if (saved != true) return;
+    setState(() => _busy = true);
+    try {
+      final exists = await CardService.exists(widget.memberId, draft.fy, draft.name);
+      if (exists && replace == null) {
+        if (!mounted) return;
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Replace existing card?'),
+            content: Text('"${draft.name.trim()}" already has a card for ${CardService.fyLabel(draft.fy)}. Saving will replace it.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Replace')),
+            ],
+          ),
+        );
+        if (ok != true) return;
+      }
+      await CardService.save(
+        memberId: widget.memberId,
+        memberName: widget.memberName,
+        fyStart: draft.fy,
+        cardName: draft.name,
+        front: draft.front!,
+        back: draft.back,
       );
-      if (confirmed != true) return;
-      await FirebaseFirestore.instance
-          .collection('membercards')
-          .doc(CardService.docId(widget.memberId, fy))
-          .set({
-        'memberId': widget.memberId,
-        'memberName': widget.memberName,
-        'fyStart': fy,
-        'imageBase64': base64Encode(bytes),
-        'sizeBytes': bytes.length,
-        'uploadedAt': FieldValue.serverTimestamp(),
-        'uploadedBy': FirebaseAuth.instance.currentUser?.uid,
-      });
-      _snack('Card saved for ${CardService.fyLabel(fy)}.');
+      _snack('Card "${draft.name.trim()}" saved for ${CardService.fyLabel(draft.fy)}.');
     } catch (e) {
       _snack('Could not save the card: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-  }
-
-  void _snack(String m) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
   @override
@@ -106,7 +99,14 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
-        title: Text('Card · ${widget.memberName}', style: const TextStyle(fontSize: 16)),
+        title: Text('Cards · ${widget.memberName}', style: const TextStyle(fontSize: 16)),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppTheme.navy,
+        foregroundColor: AppTheme.white,
+        onPressed: _busy ? null : () => _openForm(),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Card'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -120,24 +120,24 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
               child: Text('Could not load cards: ${snap.error}', textAlign: TextAlign.center),
             ));
           }
-          final cards = <int, Map<String, dynamic>>{};
+          final byYear = <int, List<Map<String, dynamic>>>{};
           for (final d in snap.data?.docs ?? <QueryDocumentSnapshot>[]) {
             final m = d.data() as Map<String, dynamic>;
             final fy = (m['fyStart'] as num?)?.toInt();
-            if (fy != null) cards[fy] = m;
+            if (fy != null) byYear.putIfAbsent(fy, () => []).add(m);
           }
-          final years = <int>{cur + 1, cur, cur - 1, cur - 2, ...cards.keys}.toList()
+          final years = <int>{cur + 1, cur, ...byYear.keys}.toList()
             ..sort((a, b) => b.compareTo(a));
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
             children: [
               Text('${widget.memberName} · ${widget.memberId}',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.navy)),
               const SizedBox(height: 4),
-              const Text('One card per financial year (April to March). Uploading again for the same year replaces the card.',
+              const Text('Several cards per year are allowed (Father, Mother, Wife...). Once a financial year is over it is closed: cards can be viewed but not added or changed.',
                   style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
               const SizedBox(height: 16),
-              for (final fy in years) _row(fy, cards[fy]),
+              for (final fy in years) _yearBlock(fy, byYear[fy] ?? const []),
               if (_busy) const Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(child: CircularProgressIndicator()),
@@ -149,52 +149,90 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
     );
   }
 
-  Widget _row(int fy, Map<String, dynamic>? card) {
-    final exists = card != null;
-    final ts = card?['uploadedAt'];
-    String when = '';
-    if (ts is Timestamp) {
-      final d = ts.toDate();
-      when = 'Uploaded ${d.day}/${d.month}/${d.year}';
-    }
+  Widget _yearBlock(int fy, List<Map<String, dynamic>> cards) {
+    final open = CardService.isOpen(fy);
+    cards.sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.border),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(CardService.fyLabel(fy),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+              const SizedBox(width: 8),
+              if (!open)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.navyLight,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text('Closed',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (cards.isEmpty)
+            const Text('No cards uploaded',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+          for (final c in cards) _cardRow(fy, c, open),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardRow(int fy, Map<String, dynamic> c, bool open) {
+    final name = CardService.displayName(c);
+    final hasBack = ((c['backBase64'] ?? '') as String).isNotEmpty;
+    final ts = c['uploadedAt'];
+    String when = '';
+    if (ts is Timestamp) {
+      final d = ts.toDate();
+      when = 'Uploaded ${d.day}/${d.month}/${d.year}';
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
+          const Icon(Icons.credit_card_rounded, color: AppTheme.navy, size: 22),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(CardService.fyLabel(fy),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-                const SizedBox(height: 2),
-                Text(exists ? when : 'No card uploaded',
-                    style: TextStyle(fontSize: 13, color: exists ? AppTheme.success : AppTheme.textSecondary)),
+                Text(name,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                Text('${hasBack ? 'Front + back' : 'Front only'}${when.isEmpty ? '' : ' · $when'}',
+                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               ],
             ),
           ),
-          if (exists)
-            TextButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(
-                builder: (_) => CardViewerScreen(
-                  title: '${widget.memberName} · ${CardService.fyLabel(fy)}',
-                  imageBase64: card['imageBase64'] as String,
-                  fileName: '${widget.memberId}_${CardService.fyName(fy)}.jpg',
-                  allowDownload: true,
-                ),
-              )),
-              child: const Text('View'),
-            ),
           TextButton(
-            onPressed: _busy ? null : () => _upload(fy, exists),
-            child: Text(exists ? 'Replace' : 'Upload'),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => CardViewerScreen(
+                title: '${widget.memberName} · $name · ${CardService.fyLabel(fy)}',
+                frontBase64: c['imageBase64'] as String,
+                backBase64: c['backBase64'] as String?,
+                fileName: '${widget.memberId}_${CardService.fyName(fy)}_${CardService.slug(name)}',
+                allowDownload: true,
+              ),
+            )),
+            child: const Text('View'),
           ),
+          if (open)
+            TextButton(
+              onPressed: _busy ? null : () => _openForm(replace: c),
+              child: const Text('Replace'),
+            ),
         ],
       ),
     );

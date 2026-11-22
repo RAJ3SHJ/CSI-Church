@@ -5,7 +5,7 @@ import '../../theme/app_theme.dart';
 /// Admin / Super Admin screen to manage Events and Upcoming Events.
 /// Members see the same data (read-only) on their Events screen.
 class AdminEventsScreen extends StatefulWidget {
-  /// 0 = Events tab, 1 = Upcoming Events tab
+  /// 0 = Events tab, 1 = Upcoming Events tab, 2 = Announcements tab
   final int initialTab;
   const AdminEventsScreen({super.key, this.initialTab = 0});
 
@@ -27,7 +27,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
   void initState() {
     super.initState();
     _tab = TabController(
-        length: 2, vsync: this, initialIndex: widget.initialTab.clamp(0, 1));
+        length: 3, vsync: this, initialIndex: widget.initialTab.clamp(0, 2));
     _tab.addListener(() {
       if (!_tab.indexIsChanging) setState(() {});
     });
@@ -49,7 +49,11 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
 
   // ───────────────────────── EVENT FORM ─────────────────────────
 
-  Future<void> _openEventForm({DocumentSnapshot? doc}) async {
+  Future<void> _openEventForm({
+    DocumentSnapshot? doc,
+    String collection = 'events',
+    String noun = 'Event',
+  }) async {
     final data = (doc?.data() as Map<String, dynamic>?) ?? {};
     final title = TextEditingController(text: data['title'] as String? ?? '');
     final desc =
@@ -73,7 +77,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                 'location': loc.text.trim(),
               };
               if (doc == null) {
-                await _db.collection('events').add({
+                await _db.collection(collection).add({
                   ...payload,
                   'createdAt': FieldValue.serverTimestamp(),
                 });
@@ -84,17 +88,17 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                 });
               }
               if (dialogContext.mounted) Navigator.pop(dialogContext);
-              _snack(doc == null ? 'Event added' : 'Event updated');
+              _snack(doc == null ? '$noun added' : '$noun updated');
             } catch (e) {
               setLocal(() => saving = false);
-              _snack('Could not save event: $e', error: true);
+              _snack('Could not save: $e', error: true);
             }
           }
 
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text(doc == null ? 'Add Event' : 'Edit Event',
+            title: Text(doc == null ? 'Add $noun' : 'Edit $noun',
                 style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -312,16 +316,26 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final onEvents = _tab.index == 0;
     return Scaffold(
       backgroundColor: AppTheme.background,
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
-        onPressed: () =>
-            onEvents ? _openEventForm() : _openAnnouncementForm(),
+        onPressed: () {
+          if (_tab.index == 0) {
+            _openEventForm();
+          } else if (_tab.index == 1) {
+            _openAnnouncementForm();
+          } else {
+            _openEventForm(collection: 'notices', noun: 'Announcement');
+          }
+        },
         icon: const Icon(Icons.add),
-        label: Text(onEvents ? 'Add Event' : 'New Upcoming Event'),
+        label: Text(_tab.index == 0
+            ? 'Add Event'
+            : _tab.index == 1
+                ? 'New Upcoming Event'
+                : 'Add Announcement'),
       ),
       body: Column(
         children: [
@@ -336,13 +350,21 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
               unselectedLabelColor: Colors.white54,
               labelStyle:
                   const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              tabs: const [Tab(text: 'Events'), Tab(text: 'Upcoming Events')],
+              tabs: const [
+                Tab(text: 'Events'),
+                Tab(text: 'Upcoming Events'),
+                Tab(text: 'Announcements'),
+              ],
             ),
           ),
           Expanded(
             child: TabBarView(
               controller: _tab,
-              children: [_buildEventsList(), _buildAnnouncementsList()],
+              children: [
+                _buildEventsList(),
+                _buildAnnouncementsList(),
+                _buildEventsList(collection: 'notices', noun: 'announcement'),
+              ],
             ),
           ),
         ],
@@ -368,7 +390,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
             padding: EdgeInsets.zero,
           ),
           const SizedBox(width: 8),
-          Text(_tab.index == 0 ? 'Events' : 'Upcoming Events',
+          Text(_tab.index == 0 ? 'Events' : _tab.index == 1 ? 'Upcoming Events' : 'Announcements',
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -397,12 +419,12 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
     );
   }
 
-  Widget _buildEventsList() {
+  Widget _buildEventsList({String collection = 'events', String noun = 'event'}) {
     return StreamBuilder<QuerySnapshot>(
-      stream: _db.collection('events').snapshots(),
+      stream: _db.collection(collection).snapshots(),
       builder: (context, snap) {
         if (snap.hasError) {
-          return _empty(Icons.error_outline, 'Could not load events: ${snap.error}');
+          return _empty(Icons.error_outline, 'Could not load ${noun}s: ${snap.error}');
         }
         if (!snap.hasData) {
           return const Center(
@@ -418,7 +440,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
           });
         if (docs.isEmpty) {
           return _empty(Icons.event_outlined,
-              'No events yet.\nTap "Add Event" to publish one.');
+              'No ${noun}s yet.\nTap "Add ${noun[0].toUpperCase()}${noun.substring(1)}" to publish one.');
         }
         return ListView.separated(
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
@@ -444,8 +466,11 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                 if (desc.isNotEmpty) desc,
                 if (loc.isNotEmpty) 'Venue: $loc',
               ],
-              onEdit: () => _openEventForm(doc: doc),
-              onDelete: () => _confirmDelete(doc, 'event'),
+              onEdit: () => _openEventForm(
+                  doc: doc,
+                  collection: collection,
+                  noun: '${noun[0].toUpperCase()}${noun.substring(1)}'),
+              onDelete: () => _confirmDelete(doc, noun),
             );
           },
         );

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
+import 'contact_us_screen.dart';
 import 'admin/admin_login_screen.dart';
 
 /// Public landing page: church photo, pastor details, Events and Upcoming Events
@@ -28,21 +29,14 @@ class LandingScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _twoColumns(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
+                      const Divider(color: AppTheme.border),
                       Center(
                         child: TextButton(
                           onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (_) => const LoginScreen())),
-                          child: const Text('Member Login →',
-                              style: TextStyle(color: AppTheme.navy, fontSize: 14, fontWeight: FontWeight.w500)),
-                        ),
-                      ),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
-                          child: const Text('Admin Login →',
-                              style: TextStyle(color: AppTheme.navy, fontSize: 14, fontWeight: FontWeight.w500)),
+                              context, MaterialPageRoute(builder: (_) => const ContactUsScreen())),
+                          child: const Text('Contact Us',
+                              style: TextStyle(color: AppTheme.navy, fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -68,7 +62,16 @@ class LandingScreen extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 10),
             color: AppTheme.navy,
           ),
-          Expanded(child: _column('Upcoming Events', 'announcements', newestFirst: true)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _column('Upcoming Events', 'announcements', newestFirst: true),
+                const SizedBox(height: 16),
+                _column('Announcements', 'notices', newestFirst: true),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -173,20 +176,52 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Pastor: photo with name and title directly below it
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1)),
-                  child: ClipOval(
-                    child: Image.asset('assets/images/pastor.jpg',
-                        width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
-                  ),
+                // Pastor on the left (photo, then name and title), logins on the right
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1)),
+                            child: ClipOval(
+                              child: Image.asset('assets/images/pastor.jpg',
+                                  width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text('Rev. M. George Ebenezer Raju',
+                              style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+                          const Text('Presbyter-in-Charge & Chairman, MDCC',
+                              style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                              context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                          child: const Text('Member Login →',
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                              context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
+                          child: const Text('Admin Login →',
+                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const Text('Rev. M. George Ebenezer Raju',
-                    style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
-                const Text('Presbyter-in-Charge & Chairman, MDCC',
-                    style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
               ],
             ),
           ),

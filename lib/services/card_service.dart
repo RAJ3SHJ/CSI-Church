@@ -108,6 +108,21 @@ class CardService {
     return byId.values.toList();
   }
 
+  /// Holders to show right now: saved ones, holders of existing cards, and the
+  /// member himself as the first holder when nothing else exists yet.
+  static List<CardHolder> mergeHolders(
+      Map<String, dynamic>? member, Iterable<Map<String, dynamic>> cards, String memberName) {
+    final byId = <String, CardHolder>{for (final h in holdersFromMember(member)) h.id: h};
+    for (final m in cards) {
+      final id = holderIdOf(m);
+      byId.putIfAbsent(id, () => CardHolder(id, displayName(m)));
+    }
+    if (byId.isEmpty && memberName.trim().isNotEmpty) {
+      byId[slug(memberName)] = CardHolder(slug(memberName), memberName.trim());
+    }
+    return byId.values.toList();
+  }
+
   /// Saves the member's holder list permanently.
   static Future<void> saveHolders(String memberId, List<CardHolder> holders) async {
     final ref = await memberRef(memberId);
@@ -134,8 +149,11 @@ class CardService {
   /// Renames a holder. Cards show the new name everywhere, including closed years.
   static Future<void> renameHolder(String memberId, String holderId, String newName) async {
     final holders = await loadHolders(memberId);
+    final found = holders.any((h) => h.id == holderId);
     final updated = [
       for (final h in holders) h.id == holderId ? CardHolder(h.id, newName.trim()) : h,
+      // A holder that was only implied (e.g. the member himself) is saved now.
+      if (!found) CardHolder(holderId, newName.trim()),
     ];
     await saveHolders(memberId, updated);
   }

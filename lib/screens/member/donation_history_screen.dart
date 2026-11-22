@@ -100,7 +100,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                         child: ListView(
                           padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
                           children: [
-                            if (cards.isEmpty)
+                            if (cards.isEmpty && _holderNames.isEmpty)
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(14),
@@ -114,6 +114,32 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                                     style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
                               ),
                             for (final c in cards) _cardTile(c),
+                            // Family members saved by the church but without a card this year.
+                            for (final e in _holderNames.entries)
+                              if (!cards.any((c) => CardService.holderIdOf(c) == e.key))
+                                Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: AppTheme.border),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.credit_card_off_outlined,
+                                          color: AppTheme.textSecondary),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                            '${e.value} · not uploaded yet for ${CardService.fyLabel(_selectedFy)}',
+                                            style: const TextStyle(
+                                                fontSize: 14, color: AppTheme.textSecondary)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                           ],
                         ),
                       ),

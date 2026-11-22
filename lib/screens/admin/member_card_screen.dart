@@ -155,8 +155,10 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
     );
   }
 
-  Widget _yearBlock(int fy, List<Map<String, dynamic>> cards) {
+  Widget _yearBlock(int fy, List<Map<String, dynamic>> source) {
     final open = CardService.isOpen(fy);
+    // Copy first: the default empty list is unmodifiable and cannot be sorted.
+    final cards = [...source];
     cards.sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

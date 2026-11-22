@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../services/member_session.dart';
 import 'donation_history_screen.dart';
 import 'profile_screen.dart';
 import 'events_screen.dart';
@@ -37,9 +38,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         // Load member data
-        final memberDoc = await FirebaseFirestore.instance
-            .collection('members').doc(user.uid).get();
-        if (memberDoc.exists && mounted) {
+        final memberDoc = await MemberSession.currentDoc();
+        if (memberDoc != null && memberDoc.exists && mounted) {
           setState(() => _memberData = memberDoc.data());
         }
 

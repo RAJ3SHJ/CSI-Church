@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/member_session.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
@@ -252,8 +254,15 @@ class _MemberListScreenState extends State<MemberListScreen> {
                 Text(memberId,
                     style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 const SizedBox(height: 3),
-                Text(phone,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                Text(
+                    data['phoneVerified'] == true
+                        ? '$phone  ✓ verified'
+                        : '$phone  · not verified',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: data['phoneVerified'] == true
+                            ? AppTheme.success
+                            : AppTheme.textSecondary)),
                 if (sector.isNotEmpty) ...[
                   const SizedBox(height: 3),
                   Text('Sector: $sector',
@@ -287,6 +296,44 @@ class _MemberListScreenState extends State<MemberListScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _togglePhoneVerified(String docId, Map<String, dynamic> data) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final e164 = MemberSession.toE164((data['phone'] ?? '').toString());
+    if (e164 == null) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('This member needs a valid 10-digit phone number first.'),
+          backgroundColor: AppTheme.error));
+      return;
+    }
+    final was = data['phoneVerified'] == true;
+    final memberId = (data['memberId'] ?? '').toString();
+    final db = FirebaseFirestore.instance;
+    try {
+      final batch = db.batch();
+      batch.update(db.collection('members').doc(docId), {
+        'phoneE164': e164,
+        'phoneVerified': !was,
+        'verifiedBy': FirebaseAuth.instance.currentUser?.uid,
+        'verifiedOn': FieldValue.serverTimestamp(),
+      });
+      batch.set(
+          db.collection('phoneIndex').doc(e164),
+          {
+            'memberIds': was
+                ? FieldValue.arrayRemove([memberId])
+                : FieldValue.arrayUnion([memberId]),
+          },
+          SetOptions(merge: true));
+      await batch.commit();
+      messenger.showSnackBar(SnackBar(
+          content: Text(was ? 'Phone verification removed' : 'Phone number verified'),
+          backgroundColor: AppTheme.success));
+    } catch (e) {
+      messenger.showSnackBar(
+          SnackBar(content: Text('Could not update: $e'), backgroundColor: AppTheme.error));
+    }
   }
 
   void _showMemberOptions(String docId, Map<String, dynamic> data) {
@@ -323,6 +370,15 @@ class _MemberListScreenState extends State<MemberListScreen> {
                     ),
                   ),
                 );
+              },
+            ),
+            _optionTile(
+              data['phoneVerified'] == true ? Icons.phone_disabled_outlined : Icons.verified_outlined,
+              data['phoneVerified'] == true ? 'Remove phone verification' : 'Verify phone number',
+              data['phoneVerified'] == true ? AppTheme.gold : AppTheme.success,
+              () {
+                Navigator.pop(context);
+                _togglePhoneVerified(docId, data);
               },
             ),
             _optionTile(

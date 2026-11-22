@@ -1,3 +1,5 @@
+import '../services/member_session.dart';
+import 'phone_login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -208,7 +210,10 @@ class LandingScreen extends StatelessWidget {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+                              context, MaterialPageRoute(
+                              builder: (_) => kPhoneLoginEnabled
+                                  ? const PhoneLoginScreen()
+                                  : const LoginScreen()))),
                           child: const Text('Member Login →',
                               style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                         ),

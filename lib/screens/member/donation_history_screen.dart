@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../services/member_session.dart';
 import '../../services/card_service.dart';
 import '../card_viewer_screen.dart';
 
@@ -31,12 +32,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     // Listens to the member's own record: id, name and saved card holder names.
-    _memberSub = FirebaseFirestore.instance
-        .collection('members')
-        .doc(user.uid)
-        .snapshots()
-        .listen((doc) {
-      if (!mounted || !doc.exists) return;
+    _memberSub = MemberSession.currentDocStream().listen((doc) {
+      if (!mounted || doc == null || !doc.exists) return;
       final data = doc.data();
       setState(() {
         _memberId = data?['memberId'] ?? '';

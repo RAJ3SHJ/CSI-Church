@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../services/member_session.dart';
 import '../../services/firebase_service.dart';
 
 class PrayerRequestScreen extends StatefulWidget {
@@ -34,9 +35,8 @@ class _PrayerRequestScreenState extends State<PrayerRequestScreen> {
   void _loadMemberData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance
-          .collection('members').doc(user.uid).get();
-      if (mounted && doc.exists) {
+      final doc = await MemberSession.currentDoc();
+      if (mounted && doc != null && doc.exists) {
         setState(() {
           _memberName = doc.data()?['name'] ?? '';
           _memberId = doc.data()?['memberId'] ?? '';

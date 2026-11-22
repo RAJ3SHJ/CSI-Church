@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/member_session.dart';
 import 'landing_screen.dart';
+import 'member/dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -34,12 +37,32 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateToLogin() async {
     await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LandingScreen()),
-      );
+    if (!mounted) return;
+    // Members who signed in with a phone number stay signed in (12 months).
+    final user = FirebaseAuth.instance.currentUser;
+    if (MemberSession.isPhoneUser(user)) {
+      if (MemberSession.isExpired(user!)) {
+        await FirebaseAuth.instance.signOut();
+      } else {
+        try {
+          final doc = await MemberSession.currentDoc();
+          final id = doc?.data()?['memberId'] as String?;
+          if (doc != null && id != null && mounted) {
+            MemberSession.chosenMemberId = id;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => DashboardScreen(memberId: id)),
+            );
+            return;
+          }
+        } catch (_) {}
+      }
     }
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LandingScreen()),
+    );
   }
 
   @override

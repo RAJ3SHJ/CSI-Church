@@ -210,10 +210,11 @@ class LandingScreen extends StatelessWidget {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(
-                              builder: (_) => kPhoneLoginEnabled
-                                  ? const PhoneLoginScreen()
-                                  : const LoginScreen()))),
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => kPhoneLoginEnabled
+                                      ? const PhoneLoginScreen()
+                                      : const LoginScreen())),
                           child: const Text('Member Login →',
                               style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                         ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,6 +20,33 @@ class MemberCardScreen extends StatefulWidget {
 
 class _MemberCardScreenState extends State<MemberCardScreen> {
   bool _busy = false;
+  Map<String, String> _holderNames = {};
+  StreamSubscription? _memberSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Saved card holder names (renames show here straight away).
+    _memberSub = FirebaseFirestore.instance
+        .collection('members')
+        .where('memberId', isEqualTo: widget.memberId)
+        .limit(1)
+        .snapshots()
+        .listen((snap) {
+      final data = snap.docs.isEmpty ? null : snap.docs.first.data();
+      if (mounted) {
+        setState(() => _holderNames = {
+              for (final h in CardService.holdersFromMember(data)) h.id: h.name,
+            });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _memberSub?.cancel();
+    super.dispose();
+  }
 
   void _snack(String m) {
     if (!mounted) return;
@@ -31,7 +59,8 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
         ? CardDraft()
         : CardDraft(
             fy: (replace['fyStart'] as num).toInt(),
-            name: CardService.displayName(replace),
+            holder: CardHolder(CardService.holderIdOf(replace),
+                CardService.displayName(replace, _holderNames)),
             // Existing photos are loaded so either side can be changed on its own.
             front: base64Decode(replace['imageBase64'] as String),
             back: ((replace['backBase64'] ?? '') as String).isEmpty
@@ -46,6 +75,8 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
             width: 420,
             child: SingleChildScrollView(
               child: CardDraftSection(
+                memberId: widget.memberId,
+                memberName: widget.memberName,
                 draft: draft,
                 lockFyAndName: replace != null,
                 onChanged: () => setD(() {}),
@@ -65,14 +96,14 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
     if (saved != true) return;
     setState(() => _busy = true);
     try {
-      final exists = await CardService.exists(widget.memberId, draft.fy, draft.name);
+      final exists = await CardService.exists(widget.memberId, draft.fy, draft.holder!.id);
       if (exists && replace == null) {
         if (!mounted) return;
         final ok = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Replace existing card?'),
-            content: Text('"${draft.name.trim()}" already has a card for ${CardService.fyLabel(draft.fy)}. Saving will replace it.'),
+            content: Text('"${draft.holder!.name}" already has a card for ${CardService.fyLabel(draft.fy)}. Saving will replace it.'),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
               TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Replace')),
@@ -85,11 +116,12 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
         memberId: widget.memberId,
         memberName: widget.memberName,
         fyStart: draft.fy,
-        cardName: draft.name,
+        holderId: draft.holder!.id,
+        cardName: draft.holder!.name,
         front: draft.front!,
         back: draft.back,
       );
-      _snack('Card "${draft.name.trim()}" saved for ${CardService.fyLabel(draft.fy)}.');
+      _snack('Card "${draft.holder!.name}" saved for ${CardService.fyLabel(draft.fy)}.');
     } catch (e) {
       _snack('Could not save the card: $e');
     } finally {
@@ -159,7 +191,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
     final open = CardService.isOpen(fy);
     // Copy first: the default empty list is unmodifiable and cannot be sorted.
     final cards = [...source];
-    cards.sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));
+    cards.sort((a, b) => CardService.displayName(a, _holderNames).compareTo(CardService.displayName(b, _holderNames)));
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -199,7 +231,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
   }
 
   Widget _cardRow(int fy, Map<String, dynamic> c, bool open) {
-    final name = CardService.displayName(c);
+    final name = CardService.displayName(c, _holderNames);
     final hasBack = ((c['backBase64'] ?? '') as String).isNotEmpty;
     final ts = c['uploadedAt'];
     String when = '';
@@ -217,8 +249,32 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(name,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        final nn = await askHolderName(context,
+                            title: 'Edit card holder name', initial: name);
+                        if (nn == null || nn == name) return;
+                        try {
+                          await CardService.renameHolder(
+                              widget.memberId, CardService.holderIdOf(c), nn);
+                          _snack('Name updated for all years.');
+                        } catch (e) {
+                          _snack('Could not rename: $e');
+                        }
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.edit_outlined, size: 16, color: AppTheme.navy),
+                      ),
+                    ),
+                  ],
+                ),
                 Text('${hasBack ? 'Front + back' : 'Front only'}${when.isEmpty ? '' : ' · $when'}',
                     style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
               ],
@@ -230,7 +286,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
                 title: '${widget.memberName} · $name · ${CardService.fyLabel(fy)}',
                 frontBase64: c['imageBase64'] as String,
                 backBase64: c['backBase64'] as String?,
-                fileName: '${widget.memberId}_${CardService.fyName(fy)}_${CardService.slug(name)}',
+                fileName: '${widget.memberId}_${CardService.fyName(fy)}_${CardService.holderIdOf(c)}',
                 allowDownload: true,
               ),
             )),

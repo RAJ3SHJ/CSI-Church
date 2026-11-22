@@ -3,27 +3,61 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../services/card_service.dart';
+import '../screens/card_viewer_screen.dart';
 
-/// What the admin is about to upload: financial year, card name, front and back photos.
+/// What the admin is about to upload: financial year, card holder, front and back photos.
 class CardDraft {
   int fy;
-  String name;
+  CardHolder? holder;
   Uint8List? front;
   Uint8List? back;
-  CardDraft({int? fy, this.name = '', this.front, this.back})
+  CardDraft({int? fy, this.holder, this.front, this.back})
       : fy = fy ?? CardService.currentFyStart();
 
   bool get hasPhoto => front != null;
-  bool get isValid => front != null && name.trim().isNotEmpty && CardService.isOpen(fy);
+  bool get isValid => front != null && holder != null && CardService.isOpen(fy);
 }
 
-/// Reusable upload form: FY chips (open years only), card name, front and back photo.
+/// Asks for a name and returns it (null if cancelled). Used to add or rename a holder.
+Future<String?> askHolderName(BuildContext context, {String title = 'New card holder', String initial = ''}) {
+  final c = TextEditingController(text: initial);
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: TextField(
+        controller: c,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+            labelText: 'Card holder name *', hintText: 'e.g. Father, Mother, Wife'),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () {
+            final v = c.text.trim();
+            if (v.isNotEmpty) Navigator.pop(ctx, v);
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Reusable upload form: FY chips (open years only), saved card holder (pick,
+/// add new, rename with the pencil, view the existing card), front and back photo.
 class CardDraftSection extends StatefulWidget {
+  final String memberId;
+  final String memberName;
   final CardDraft draft;
   final VoidCallback onChanged;
   final bool lockFyAndName;
   const CardDraftSection({
     super.key,
+    required this.memberId,
+    required this.memberName,
     required this.draft,
     required this.onChanged,
     this.lockFyAndName = false,
@@ -34,23 +68,96 @@ class CardDraftSection extends StatefulWidget {
 }
 
 class _CardDraftSectionState extends State<CardDraftSection> {
-  late final TextEditingController _name;
+  static const String _newKey = '__new__';
+  List<CardHolder> _holders = [];
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _name = TextEditingController(text: widget.draft.name);
+    _loadHolders();
   }
 
-  @override
-  void dispose() {
-    _name.dispose();
-    super.dispose();
+  Future<void> _loadHolders() async {
+    try {
+      final h = await CardService.loadHolders(widget.memberId);
+      if (!mounted) return;
+      setState(() {
+        _holders = h;
+        _loading = false;
+        // Keep the selected holder in sync with the saved list (e.g. after a rename).
+        final cur = widget.draft.holder;
+        if (cur != null) {
+          final match = h.where((x) => x.id == cur.id);
+          widget.draft.holder = match.isEmpty ? cur : match.first;
+        }
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   void _toast(String m) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+  }
+
+  Future<void> _addHolder() async {
+    final name = await askHolderName(context);
+    if (name == null) return;
+    try {
+      final h = await CardService.addHolder(widget.memberId, name);
+      await _loadHolders();
+      setState(() => widget.draft.holder = h);
+      widget.onChanged();
+    } catch (e) {
+      _toast('Could not save the name: $e');
+    }
+  }
+
+  Future<void> _renameHolder() async {
+    final cur = widget.draft.holder;
+    if (cur == null) return;
+    final name = await askHolderName(context, title: 'Edit card holder name', initial: cur.name);
+    if (name == null || name == cur.name) return;
+    try {
+      await CardService.renameHolder(widget.memberId, cur.id, name);
+      await _loadHolders();
+      widget.onChanged();
+      _toast('Name updated. It shows the new name for all years.');
+    } catch (e) {
+      _toast('Could not rename: $e');
+    }
+  }
+
+  Future<void> _viewExisting() async {
+    final h = widget.draft.holder;
+    if (h == null) {
+      _toast('Choose a card holder first.');
+      return;
+    }
+    try {
+      final card = await CardService.getCard(widget.memberId, widget.draft.fy, h.id);
+      if (!mounted) return;
+      if (card == null) {
+        _toast('No card uploaded yet for ${h.name} in ${CardService.fyLabel(widget.draft.fy)}.');
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CardViewerScreen(
+            title: '${h.name} · ${CardService.fyLabel(widget.draft.fy)}',
+            frontBase64: card['imageBase64'] as String,
+            backBase64: card['backBase64'] as String?,
+            fileName: '${widget.memberId}_${CardService.fyName(widget.draft.fy)}_${h.id}',
+            allowDownload: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      _toast('Could not open the card: $e');
+    }
   }
 
   /// Asks whether to take a photo with the camera or choose one from the gallery/files.
@@ -145,19 +252,7 @@ class _CardDraftSectionState extends State<CardDraftSection> {
         const Text('Past financial years are closed.',
             style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         const SizedBox(height: 12),
-        TextField(
-          controller: _name,
-          enabled: !widget.lockFyAndName,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Card name *',
-            hintText: 'e.g. Father, Mother, Wife',
-          ),
-          onChanged: (v) {
-            d.name = v;
-            widget.onChanged();
-          },
-        ),
+        _holderRow(d),
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,6 +269,69 @@ class _CardDraftSectionState extends State<CardDraftSection> {
                   widget.onChanged();
                 })),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _holderRow(CardDraft d) {
+    if (widget.lockFyAndName) {
+      return Row(
+        children: [
+          Expanded(
+            child: InputDecorator(
+              decoration: const InputDecoration(labelText: 'Card holder name'),
+              child: Text(d.holder?.name ?? ''),
+            ),
+          ),
+          IconButton(
+            onPressed: _renameHolder,
+            icon: const Icon(Icons.edit_outlined, color: AppTheme.navy),
+            tooltip: 'Edit name',
+          ),
+        ],
+      );
+    }
+    final selected = d.holder != null && _holders.any((h) => h.id == d.holder!.id)
+        ? d.holder!.id
+        : null;
+    return Row(
+      children: [
+        Expanded(
+          child: _loading
+              ? const LinearProgressIndicator()
+              : DropdownButtonFormField<String>(
+                  key: ValueKey('${d.holder?.id}_${_holders.length}_${_holders.map((h) => h.name).join()}'),
+                  initialValue: selected,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Card holder name *'),
+                  hint: Text(_holders.isEmpty ? 'Add the first card holder' : 'Choose card holder'),
+                  items: [
+                    for (final h in _holders)
+                      DropdownMenuItem(value: h.id, child: Text(h.name)),
+                    const DropdownMenuItem(value: _newKey, child: Text('+ New card holder')),
+                  ],
+                  onChanged: (v) {
+                    if (v == _newKey) {
+                      _addHolder();
+                      return;
+                    }
+                    setState(() => d.holder = _holders.firstWhere((h) => h.id == v));
+                    widget.onChanged();
+                  },
+                ),
+        ),
+        IconButton(
+          onPressed: d.holder == null ? null : _renameHolder,
+          icon: const Icon(Icons.edit_outlined),
+          color: AppTheme.navy,
+          tooltip: 'Edit name',
+        ),
+        IconButton(
+          onPressed: d.holder == null ? null : _viewExisting,
+          icon: const Icon(Icons.visibility_outlined),
+          color: AppTheme.navy,
+          tooltip: 'View uploaded card',
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +18,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   int _selectedFy = CardService.currentFyStart();
   String _memberId = '';
   String _memberName = '';
+  Map<String, String> _holderNames = {};
+  StreamSubscription? _memberSub;
 
   @override
   void initState() {
@@ -24,17 +27,31 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     _loadMember();
   }
 
-  void _loadMember() async {
+  void _loadMember() {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('members').doc(user.uid).get();
-      if (mounted && doc.exists) {
-        setState(() {
-          _memberId = doc.data()?['memberId'] ?? '';
-          _memberName = doc.data()?['name'] ?? '';
-        });
-      }
-    }
+    if (user == null) return;
+    // Listens to the member's own record: id, name and saved card holder names.
+    _memberSub = FirebaseFirestore.instance
+        .collection('members')
+        .doc(user.uid)
+        .snapshots()
+        .listen((doc) {
+      if (!mounted || !doc.exists) return;
+      final data = doc.data();
+      setState(() {
+        _memberId = data?['memberId'] ?? '';
+        _memberName = data?['name'] ?? '';
+        _holderNames = {
+          for (final h in CardService.holdersFromMember(data)) h.id: h.name,
+        };
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _memberSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -75,7 +92,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   final years = <int>{cur, ...byYear.keys}.toList()
                     ..sort((a, b) => b.compareTo(a));
                   final cards = [...(byYear[_selectedFy] ?? <Map<String, dynamic>>[])]
-                    ..sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));
+                    ..sort((a, b) => CardService.displayName(a, _holderNames).compareTo(CardService.displayName(b, _holderNames)));
                   return Column(
                     children: [
                       _buildFilterChips(years),
@@ -111,7 +128,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
   }
 
   Widget _cardTile(Map<String, dynamic> c) {
-    final name = CardService.displayName(c);
+    final name = CardService.displayName(c, _holderNames);
     final hasBack = ((c['backBase64'] ?? '') as String).isNotEmpty;
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -121,7 +138,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             title: '$name · ${CardService.fyLabel(_selectedFy)}',
             frontBase64: c['imageBase64'] as String,
             backBase64: c['backBase64'] as String?,
-            fileName: '${_memberId}_${CardService.fyName(_selectedFy)}',
+            fileName: '${_memberId}_${CardService.fyName(_selectedFy)}_${CardService.holderIdOf(c)}',
           ),
         ),
       ),

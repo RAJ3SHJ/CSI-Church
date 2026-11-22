@@ -27,8 +27,7 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
   bool _isSearching = false;
   String _foundMemberName = '';
   String _foundMemberId = '';
-  CardDraft _card = CardDraft();
-  Key _cardKey = UniqueKey();
+  final List<_CardEntry> _cards = [_CardEntry()];
   List<String> _categories = ['Tithe', 'Offering', 'Building Fund', 'Special Fund', 'Charity', 'Missions'];
   final List<String> _paymentModes = ['Cash', 'UPI', 'Cheque', 'Bank Transfer'];
 
@@ -85,6 +84,9 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
           _memberFound = true;
           _foundMemberName = data['name'] ?? '';
           _foundMemberId = data['memberId'] ?? '';
+          _cards
+            ..clear()
+            ..add(_CardEntry());
         });
       } else {
         setState(() { _memberFound = false; _foundMemberName = ''; });
@@ -109,29 +111,43 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
       return;
     }
 
-    // If a card photo was chosen, preview and confirm once before saving anything.
-    if (_card.hasPhoto) {
-      if (_card.name.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter the card name (for example Father, Mother, Wife).')),
-        );
-        return;
+    // Cards with a front photo are uploaded with the donation. Check and confirm first.
+    final pending = _cards.where((e) => e.draft.hasPhoto).toList();
+    if (pending.isNotEmpty) {
+      final seen = <String>{};
+      for (final e in pending) {
+        final d = e.draft;
+        if (d.holder == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please choose the card holder name for every card you are uploading.')),
+          );
+          return;
+        }
+        if (!CardService.isOpen(d.fy)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${CardService.fyLabel(d.fy)} is closed. Choose the current or next year.')),
+          );
+          return;
+        }
+        if (!seen.add('${d.holder!.id}_${d.fy}')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${d.holder!.name} is added twice for ${CardService.fyLabel(d.fy)}. Keep one.')),
+          );
+          return;
+        }
       }
-      if (!CardService.isOpen(_card.fy)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${CardService.fyLabel(_card.fy)} is closed. Choose the current or next year.')),
-        );
-        return;
+      final replacing = <String, bool>{};
+      for (final e in pending) {
+        try {
+          replacing['${e.draft.holder!.id}_${e.draft.fy}'] =
+              await CardService.exists(_foundMemberId, e.draft.fy, e.draft.holder!.id);
+        } catch (_) {}
       }
-      bool replacing = false;
-      try {
-        replacing = await CardService.exists(_foundMemberId, _card.fy, _card.name);
-      } catch (_) {}
       if (!mounted) return;
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Save donation and card?'),
+          title: Text(pending.length == 1 ? 'Save donation and card?' : 'Save donation and ${pending.length} cards?'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -141,22 +157,27 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                     style: const TextStyle(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 4),
                 Text('Donation ₹${_amountController.text.trim()}'),
-                Text('Card: ${_card.name.trim()} · ${CardService.fyLabel(_card.fy)}'),
-                if (replacing)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('A card with this name already exists for this year and will be replaced.',
-                        style: TextStyle(color: AppTheme.error)),
+                for (final e in pending) ...[
+                  const SizedBox(height: 12),
+                  Text('Card: ${e.draft.holder!.name} · ${CardService.fyLabel(e.draft.fy)}',
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  if (replacing['${e.draft.holder!.id}_${e.draft.fy}'] == true)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text('This card already exists for this year and will be replaced.',
+                          style: TextStyle(color: AppTheme.error)),
+                    ),
+                  const SizedBox(height: 6),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 220),
+                    child: Image.memory(e.draft.front!, fit: BoxFit.contain),
                   ),
-                const SizedBox(height: 12),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 340),
-                  child: Image.memory(_card.front!, fit: BoxFit.contain),
-                ),
-                if (_card.back != null) ...[
-                  const SizedBox(height: 8),
-                  const Text('Back side attached',
-                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  if (e.draft.back != null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text('Back side attached',
+                          style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                    ),
                 ],
               ],
             ),
@@ -181,21 +202,24 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
         mode: _selectedPaymentMode,
         notes: _notesController.text.trim(),
       );
-      String? cardError;
-      if (_card.hasPhoto) {
+      final cardErrors = <String>[];
+      for (final e in _cards.where((e) => e.draft.hasPhoto)) {
+        final d = e.draft;
         try {
           await CardService.save(
             memberId: _foundMemberId,
             memberName: _foundMemberName,
-            fyStart: _card.fy,
-            cardName: _card.name,
-            front: _card.front!,
-            back: _card.back,
+            fyStart: d.fy,
+            holderId: d.holder!.id,
+            cardName: d.holder!.name,
+            front: d.front!,
+            back: d.back,
           );
-        } catch (e) {
-          cardError = e.toString();
+        } catch (err) {
+          cardErrors.add('${d.holder?.name ?? 'card'}: $err');
         }
       }
+      final cardError = cardErrors.isEmpty ? null : cardErrors.join('\n');
       if (mounted) {
         setState(() { _isSubmitting = false; _isSubmitted = true; });
         if (cardError != null) {
@@ -507,17 +531,54 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Monthly Subscription Card (Optional)',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text('Monthly Subscription Card (Optional)',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                      ),
+                      if (_memberFound)
+                        TextButton(
+                          onPressed: () => setState(() => _cards.add(_CardEntry())),
+                          child: const Text('Add New Card',
+                              style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 4),
-                  const Text('Choose the financial year, give the card a name (Father, Mother, Wife...), then upload the front and, if there is one, the back. A member can have several cards.',
+                  const Text('Choose the financial year and the saved card holder (Father, Mother, Wife...), then upload the front and, if there is one, the back. Use Add New Card for another card.',
                       style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                   const SizedBox(height: 10),
-                  CardDraftSection(
-                    key: _cardKey,
-                    draft: _card,
-                    onChanged: () => setState(() {}),
-                  ),
+                  if (!_memberFound)
+                    const Text('Search and select a member first to add cards.',
+                        style: TextStyle(fontSize: 13, color: AppTheme.textSecondary))
+                  else
+                    for (var i = 0; i < _cards.length; i++) ...[
+                      if (i > 0) const Divider(height: 28),
+                      if (_cards.length > 1)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text('Card ${i + 1}',
+                                  style: const TextStyle(
+                                      fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                            ),
+                            if (_cards.length > 1)
+                              IconButton(
+                                onPressed: () => setState(() => _cards.removeAt(i)),
+                                icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                                tooltip: 'Remove this card',
+                              ),
+                          ],
+                        ),
+                      CardDraftSection(
+                        key: _cards[i].key,
+                        memberId: _foundMemberId,
+                        memberName: _foundMemberName,
+                        draft: _cards[i].draft,
+                        onChanged: () => setState(() {}),
+                      ),
+                    ],
                 ],
               ),
             ),
@@ -594,8 +655,9 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                 _memberSearchController.clear();
                 _amountController.clear();
                 _notesController.clear();
-                _card = CardDraft();
-                _cardKey = UniqueKey();
+                _cards
+                  ..clear()
+                  ..add(_CardEntry());
               }),
               child: const Text('Add Another Donation',
                   style: TextStyle(color: AppTheme.navy)),
@@ -605,4 +667,10 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
       ),
     );
   }
+}
+
+/// One card block on the Add Donation screen.
+class _CardEntry {
+  final CardDraft draft = CardDraft();
+  final Key key = UniqueKey();
 }

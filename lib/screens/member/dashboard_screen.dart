@@ -225,37 +225,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Total Giving',
-                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                const SizedBox(height: 4),
-                Text('₹${_totalDonations.toStringAsFixed(0)}',
-                    style: const TextStyle(fontSize: 22,
-                        fontWeight: FontWeight.w700, color: AppTheme.navy)),
-              ],
-            ),
-          ),
-          Container(width: 1, height: 40, color: AppTheme.border),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('This Month',
-                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                  const SizedBox(height: 4),
-                  Text('₹${_thisMonthDonations.toStringAsFixed(0)}',
-                      style: const TextStyle(fontSize: 22,
-                          fontWeight: FontWeight.w700, color: AppTheme.navy)),
-                ],
-              ),
-            ),
-          ),
           GestureDetector(
             onTap: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const DonationHistoryScreen())),

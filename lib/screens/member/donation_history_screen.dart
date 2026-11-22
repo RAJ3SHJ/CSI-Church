@@ -72,7 +72,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                     if (fy != null) byYear.putIfAbsent(fy, () => []).add(m);
                   }
                   final cur = CardService.currentFyStart();
-                  final years = <int>{cur, cur - 1, cur - 2, ...byYear.keys}.toList()
+                  final years = <int>{cur, ...byYear.keys}.toList()
                     ..sort((a, b) => b.compareTo(a));
                   final cards = [...(byYear[_selectedFy] ?? <Map<String, dynamic>>[])]
                     ..sort((a, b) => CardService.displayName(a).compareTo(CardService.displayName(b)));

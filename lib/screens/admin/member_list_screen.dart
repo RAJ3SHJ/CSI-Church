@@ -298,6 +298,118 @@ class _MemberListScreenState extends State<MemberListScreen> {
     );
   }
 
+  Future<void> _editMember(String docId, Map<String, dynamic> data) async {
+    final name = TextEditingController(text: (data['name'] ?? '').toString());
+    final phone = TextEditingController(text: (data['phone'] ?? '').toString());
+    final formKey = GlobalKey<FormState>();
+    bool saving = false;
+    final wasVerified = data['phoneVerified'] == true;
+    final oldE164 = (data['phoneE164'] ?? '').toString();
+    final memberId = (data['memberId'] ?? '').toString();
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setLocal) {
+          Future<void> save() async {
+            if (!formKey.currentState!.validate()) return;
+            setLocal(() => saving = true);
+            final newPhone = phone.text.trim();
+            final newE164 = MemberSession.toE164(newPhone)!;
+            final phoneChanged = newE164 != oldE164;
+            final db = FirebaseFirestore.instance;
+            try {
+              final batch = db.batch();
+              final update = <String, dynamic>{
+                'name': name.text.trim(),
+                'phone': newPhone,
+              };
+              if (phoneChanged) {
+                // A new number must be verified again by an admin.
+                update['phoneE164'] = newE164;
+                update['phoneVerified'] = false;
+                if (wasVerified && oldE164.isNotEmpty) {
+                  batch.set(
+                      db.collection('phoneIndex').doc(oldE164),
+                      {'memberIds': FieldValue.arrayRemove([memberId])},
+                      SetOptions(merge: true));
+                }
+              }
+              batch.update(db.collection('members').doc(docId), update);
+              await batch.commit();
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+              if (!mounted) return;
+              ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
+                content: Text(phoneChanged && wasVerified
+                    ? 'Saved. The new phone number needs to be verified again.'
+                    : 'Member updated'),
+                backgroundColor: AppTheme.success,
+              ));
+            } catch (e) {
+              setLocal(() => saving = false);
+              if (!mounted) return;
+              ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
+                  content: Text('Could not save: $e'), backgroundColor: AppTheme.error));
+            }
+          }
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text('Edit $memberId',
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+            content: SizedBox(
+              width: 420,
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: name,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(labelText: 'Name *'),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: phone,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                          labelText: 'Phone Number *', hintText: '10-digit number'),
+                      validator: (v) => MemberSession.toE164(v ?? '') == null
+                          ? 'Enter a valid 10-digit phone number'
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: saving ? null : () => Navigator.pop(dialogContext),
+                child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+              ),
+              ElevatedButton(
+                onPressed: saving ? null : save,
+                style: ElevatedButton.styleFrom(minimumSize: const Size(96, 44)),
+                child: saving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.white))
+                    : const Text('Save'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    name.dispose();
+    phone.dispose();
+  }
+
   Future<void> _togglePhoneVerified(String docId, Map<String, dynamic> data) async {
     final messenger = ScaffoldMessenger.of(context);
     final e164 = MemberSession.toE164((data['phone'] ?? '').toString());
@@ -370,6 +482,15 @@ class _MemberListScreenState extends State<MemberListScreen> {
                     ),
                   ),
                 );
+              },
+            ),
+            _optionTile(
+              Icons.edit_outlined,
+              'Edit Name & Phone',
+              AppTheme.navy,
+              () {
+                Navigator.pop(context);
+                _editMember(docId, data);
               },
             ),
             _optionTile(

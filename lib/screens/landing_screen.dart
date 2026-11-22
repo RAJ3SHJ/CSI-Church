@@ -9,6 +9,8 @@ import 'admin/admin_login_screen.dart';
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
+  static const Color _lavender = Color(0xFFE6E6FA);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,7 +156,7 @@ class LandingScreen extends StatelessWidget {
   Widget _header(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: AppTheme.navy,
+      color: _lavender,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -162,7 +164,7 @@ class LandingScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.navy, width: 4),
+              border: Border.all(color: _lavender, width: 4),
             ),
             child: Image.asset('assets/images/church.jpg', fit: BoxFit.fitWidth),
           ),
@@ -174,7 +176,7 @@ class LandingScreen extends StatelessWidget {
                 // Pastor: photo with name and title directly below it
                 Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: AppTheme.navy, width: 1)),
                   child: ClipOval(
                     child: Image.asset('assets/images/pastor.jpg',
                         width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
@@ -182,9 +184,9 @@ class LandingScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 const Text('Rev. M. George Ebenezer Raju',
-                    style: TextStyle(fontSize: 11, color: Colors.white60, height: 1.3)),
+                    style: TextStyle(fontSize: 11, color: AppTheme.navy, height: 1.3)),
                 const Text('Presbyter-in-Charge & Chairman, MDCC',
-                    style: TextStyle(fontSize: 11, color: Colors.white60, height: 1.3)),
+                    style: TextStyle(fontSize: 11, color: AppTheme.navy, height: 1.3)),
               ],
             ),
           ),

@@ -108190,7 +108190,7 @@ return A.t($async$CL,r)},
 F(a){var s=this,r=s.aeF(a)
 return A.d5(null,B.aW,A.U(A.b([r,A.av(s.Q?s.ag0():s.aeE(),1)],t.p),B.A,B.t,B.u),null,null)},
 aeF(a){var s=null,r=A.aR(a,s,t.w).w
-return A.Q(s,A.aj(A.b([A.c1(s,s,B.bW,s,s,new A.awm(a),B.an,s,s),B.as,B.aZs],t.p),B.A,B.t,B.u,0),B.z,B.F,s,s,s,s,s,new A.a4(16,r.r.b+10,16,16),s,s,s)},
+return A.Q(s,A.aj(A.b([A.c1(s,s,B.bW,s,s,new A.awm(a),B.an,s,s),B.as,B.aZE],t.p),B.A,B.t,B.u,0),B.z,B.F,s,s,s,s,s,new A.a4(16,r.r.b+10,16,16),s,s,s)},
 aeE(){var s,r,q=this,p=null,o=A.a1(16),n=A.bn(B.a1,1),m=t.VS,l=A.av(A.dE(!1,q.e,B.ZQ,p,A.b([new A.t4(A.eF("[A-Za-z0-9\\-]",!0,!1),!0,"")],m),p,1,!1,p,p,p,B.OR,p),1),k=q.at?p:new A.awi(q),j=A.jG(p,p,p,p,p,p,p,p,p,p,p,B.aRi,p,p,new A.c5(A.a1(12),B.S),p,p,p,p,p),i=t.p
 j=A.b([B.aYW,B.aH,A.aj(A.b([l,B.as,A.dV(q.at?B.k5:B.aYJ,k,j)],i),B.A,B.t,B.u,0)],i)
 if(q.as){l=A.a1(10)
@@ -109043,7 +109043,7 @@ r=A.X(["label","Total Collected","value",p.r?o:p.wI(p.e.h(0,"allTimeTotal")),"ic
 q=A.b([n,s,r,A.X(["label","This Year","value",p.r?o:p.wI(p.e.h(0,"thisYearTotal")),"icon",B.lq],m,l)],t.Mq)
 n=a?4:2
 return A.EH(null,B.V,new A.v7(n,10,10,a?1.8:1.5),new A.ay_(q),4,null,B.hL,!0)},
-afQ(a){var s=t.N,r=t.K,q=A.b([A.X(["icon",B.lt,"label","Add Member"],s,r),A.X(["icon",B.Yc,"label","Add Donation"],s,r),A.X(["icon",B.fp,"label","View Members"],s,r),A.X(["icon",B.qK,"label","Search"],s,r),A.X(["icon",B.eh,"label","Events"],s,r),A.X(["icon",B.hs,"label","Upcoming Events"],s,r),A.X(["icon",B.qJ,"label","Announcements"],s,r),A.X(["icon",B.y7,"label","Contact Us"],s,r)],t.Mq)
+afQ(a){var s=t.N,r=t.K,q=A.b([A.X(["icon",B.lt,"label","Add Member"],s,r),A.X(["icon",B.Yc,"label","Add Monthly Subscription"],s,r),A.X(["icon",B.fp,"label","View Members"],s,r),A.X(["icon",B.qK,"label","Search"],s,r),A.X(["icon",B.eh,"label","Events"],s,r),A.X(["icon",B.hs,"label","Upcoming Events"],s,r),A.X(["icon",B.qJ,"label","Announcements"],s,r),A.X(["icon",B.y7,"label","Contact Us"],s,r)],t.Mq)
 s=a?4:2
 return A.EH(null,B.V,new A.v7(s,10,10,a?2.5:2),new A.axY(q),8,null,B.hL,!0)},
 afR(a){var s,r,q=null,p=this.f
@@ -109148,7 +109148,7 @@ $S:149}
 A.axX.prototype={
 $0(){var s,r=this,q=null,p=A.ak(r.a.h(0,"label"))
 if(p==="Add Member"){s=A.bL(new A.axP(),q,t.z)
-A.aq(r.b,!1).bx(s)}else if(p==="Add Donation"){s=A.bL(new A.axQ(),q,t.z)
+A.aq(r.b,!1).bx(s)}else if(p==="Add Monthly Subscription"){s=A.bL(new A.axQ(),q,t.z)
 A.aq(r.b,!1).bx(s)}else if(p==="View Members"){s=A.bL(new A.axR(),q,t.z)
 A.aq(r.b,!1).bx(s)}else if(p==="Search"){s=A.bL(new A.axS(),q,t.z)
 A.aq(r.b,!1).bx(s)}else if(p==="Events"){s=A.bL(new A.axT(),q,t.z)
@@ -109721,14 +109721,14 @@ case 6:case 1:return A.r(q,r)
 case 2:return A.q(o.at(-1),r)}})
 return A.t($async$xq,r)},
 F(a){var s,r,q=null,p=t.w,o=t.p
-if(A.aR(a,q,p).w.a.a>768){p=A.av(A.Q(q,A.cb(A.U(A.b([A.Q(q,B.Yq,B.z,q,q,new A.a2(A.at(38,B.w.u()>>>16&255,B.w.u()>>>8&255,B.w.u()&255),q,q,q,q,q,B.bN),q,100,q,q,q,q,100),B.dC,B.b_q,B.aH,B.aZt],o),B.A,B.bS,B.u),q,q),B.z,B.F,q,q,q,q,q,q,q,q,q),2)
+if(A.aR(a,q,p).w.a.a>768){p=A.av(A.Q(q,A.cb(A.U(A.b([A.Q(q,B.Yq,B.z,q,q,new A.a2(A.at(38,B.w.u()>>>16&255,B.w.u()>>>8&255,B.w.u()&255),q,q,q,q,q,B.bN),q,100,q,q,q,q,100),B.dC,B.b_q,B.aH,B.aZs],o),B.A,B.bS,B.u),q,q),B.z,B.F,q,q,q,q,q,q,q,q,q),2)
 s=A.a1(24)
 r=A.b([new A.bN(0,B.aN,A.at(20,B.W.u()>>>16&255,B.W.u()>>>8&255,B.W.u()&255),B.jK,24)],t.V)
 o=A.aj(A.b([p,A.av(A.Q(q,A.cb(A.Q(q,this.TM(!0),B.z,q,q,new A.a2(B.w,q,q,s,r,q,B.L),q,q,q,B.WM,q,q,420),q,q),B.z,B.aW,q,q,q,q,q,q,q,q,q),3)],o),B.A,B.t,B.u,0)
 p=o}else{s=this.c
 s.toString
 p=A.aR(s,q,p).w
-o=A.U(A.b([A.Q(q,A.U(A.b([A.Q(q,B.Zf,B.z,q,q,new A.a2(A.at(38,B.w.u()>>>16&255,B.w.u()>>>8&255,B.w.u()&255),q,q,q,q,q,B.bN),q,72,q,q,q,q,72),B.bf,B.aZA,B.bD,B.b__],o),B.A,B.t,B.u),B.z,B.F,q,q,q,q,q,new A.a4(24,p.r.b+32,24,28),q,q,q),A.av(A.Q(q,A.e8(this.afw(),q,B.V,B.eI,q,B.ar),B.z,B.aW,q,q,q,q,q,q,q,q,q),1)],o),B.A,B.t,B.u)
+o=A.U(A.b([A.Q(q,A.U(A.b([A.Q(q,B.Zf,B.z,q,q,new A.a2(A.at(38,B.w.u()>>>16&255,B.w.u()>>>8&255,B.w.u()&255),q,q,q,q,q,B.bN),q,72,q,q,q,q,72),B.bf,B.aZz,B.bD,B.b__],o),B.A,B.t,B.u),B.z,B.F,q,q,q,q,q,new A.a4(24,p.r.b+32,24,28),q,q,q),A.av(A.Q(q,A.e8(this.afw(),q,B.V,B.eI,q,B.ar),B.z,B.aW,q,q,q,q,q,q,q,q,q),1)],o),B.A,B.t,B.u)
 p=o}return A.d5(q,B.F,p,q,q)},
 TM(a){var s,r,q=this,p=null,o=t.p,n=A.b([],o)
 if(a)B.l.M(n,A.b([B.Yj,B.bf],o))
@@ -110548,7 +110548,7 @@ n=k.as
 n=A.dE(!1,k.y,A.fJ(j,j,j,j,j,j,j,j,!0,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,j,"Set initial password (min 6 chars)",j,j,j,j,j,j,j,j,j,!0,!0,!1,j,B.fq,j,j,j,j,j,j,A.c1(j,j,A.c8(n?B.dS:B.ei,B.am,j,20),j,j,new A.awH(k),j,j,j),j,j,j,j,j),j,j,j,1,n,j,j,j,B.b_,new A.awI())
 m=k.z
 l=m?j:k.gaqh()
-return A.e8(A.ij(j,A.U(A.b([i,B.c5,A.Q(j,A.U(A.b([s,B.c5,r,B.c5,q,B.c5,p,B.c5,o,B.c5,B.aZz,B.aH,n,B.aH,B.aZy,B.bC,A.dV(m?B.eq:B.aZg,l,j)],f),B.T,B.t,B.u),B.z,j,j,new A.a2(B.w,j,g,h,j,j,B.L),j,j,j,B.bd,j,j,j)],f),B.A,B.t,B.u),k.d),j,B.V,B.az,j,B.ar)},
+return A.e8(A.ij(j,A.U(A.b([i,B.c5,A.Q(j,A.U(A.b([s,B.c5,r,B.c5,q,B.c5,p,B.c5,o,B.c5,B.aZy,B.aH,n,B.aH,B.aZx,B.bC,A.dV(m?B.eq:B.aZg,l,j)],f),B.T,B.t,B.u),B.z,j,j,new A.a2(B.w,j,g,h,j,j,B.L),j,j,j,B.bd,j,j,j)],f),B.A,B.t,B.u),k.d),j,B.V,B.az,j,B.ar)},
 Bx(a,b,c,d,e,f){var s=null,r=A.H(a,s,s,s,s,B.bL,s,s,s),q=A.c8(d,B.F,s,20)
 return A.U(A.b([r,B.aH,A.dE(!1,c,A.fJ(s,s,s,s,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,b,s,s,s,s,s,s,s,s,s,!0,!0,!1,s,q,s,s,s,s,s,s,s,s,s,s,s,s),s,s,e,1,!1,s,s,s,B.b_,f)],t.p),B.T,B.t,B.u)},
 ajN(a,b,c,d,e){return this.Bx(a,b,c,d,null,e)},
@@ -110888,7 +110888,7 @@ A.ec.prototype={}
 A.iR.prototype={}
 A.MX.prototype={
 UR(a){var s="Member Management",r="Donation Management",q="Other Access"
-return A.b([new A.ec("view_members","View Members",s,!0),new A.ec("add_member","Add Member",s,a),new A.ec("edit_member","Edit Member",s,a),new A.ec("deactivate_member","Deactivate Member",s,a),new A.ec("view_donations","View Donations",r,!0),new A.ec("add_donation","Add Donation",r,a),new A.ec("edit_donation","Edit Donation",r,a),new A.ec("delete_donation","Delete Donation",r,a),new A.ec("search_filter","Search & Filter",q,!0),new A.ec("category_management","Category Management",q,a),new A.ec("view_audit","View Audit Trail",q,a)],t.o_)},
+return A.b([new A.ec("view_members","View Members",s,!0),new A.ec("add_member","Add Member",s,a),new A.ec("edit_member","Edit Member",s,a),new A.ec("deactivate_member","Deactivate Member",s,a),new A.ec("view_donations","View Donations",r,!0),new A.ec("add_donation","Add Monthly Subscription",r,a),new A.ec("edit_donation","Edit Donation",r,a),new A.ec("delete_donation","Delete Donation",r,a),new A.ec("search_filter","Search & Filter",q,!0),new A.ec("category_management","Category Management",q,a),new A.ec("view_audit","View Audit Trail",q,a)],t.o_)},
 Jr(){return this.UR(!1)},
 ah(){var s,r,q,p=this
 p.ar()
@@ -111021,7 +111021,7 @@ r=t.p
 l=A.Q(m,A.aj(A.b([A.c1(m,m,B.bW,m,m,new A.aLF(a),B.an,m,m),B.as,A.av(A.U(A.b([A.H(n.a.c.b,m,m,m,m,B.bY,m,m,m),A.H(""+s+" of 11 permissions enabled",m,m,m,m,B.aWC,m,m,m)],r),B.T,B.t,B.u),1)],r),B.A,B.t,B.u,0),B.z,B.F,m,m,m,m,m,new A.a4(16,l.r.b+10,16,16),m,m,m)
 q=A.a1(12)
 p=A.bn(B.a1,1)
-q=A.b([A.Q(m,A.aj(A.b([B.aZB,B.ck,A.co(m,A.Q(m,B.aZS,B.z,m,m,new A.a2(B.aj,m,m,A.a1(8),m,m,B.L),m,m,m,B.iX,m,m,m),B.V,!1,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,new A.aLG(n),m,m,m,m,m,m,!1,B.aF),B.as,A.co(m,A.Q(m,B.aZH,B.z,m,m,new A.a2(B.ec,m,m,A.a1(8),m,m,B.L),m,m,m,B.iX,m,m,m),B.V,!1,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,new A.aLH(n),m,m,m,m,m,m,!1,B.aF)],r),B.A,B.t,B.u,0),B.z,m,m,new A.a2(B.w,m,p,q,m,m,B.L),m,m,m,B.iZ,m,m,m),B.ad],r)
+q=A.b([A.Q(m,A.aj(A.b([B.aZA,B.ck,A.co(m,A.Q(m,B.aZS,B.z,m,m,new A.a2(B.aj,m,m,A.a1(8),m,m,B.L),m,m,m,B.iX,m,m,m),B.V,!1,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,new A.aLG(n),m,m,m,m,m,m,!1,B.aF),B.as,A.co(m,A.Q(m,B.aZH,B.z,m,m,new A.a2(B.ec,m,m,A.a1(8),m,m,B.L),m,m,m,B.iX,m,m,m),B.V,!1,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,m,new A.aLH(n),m,m,m,m,m,m,!1,B.aF)],r),B.A,B.t,B.u,0),B.z,m,m,new A.a2(B.w,m,p,q,m,m,B.L),m,m,m,B.iZ,m,m,m),B.ad],r)
 p=n.gakQ()
 o=A.m(p).i("eb<1,2>")
 B.l.M(q,A.j7(new A.eb(p,o),new A.aLI(n),o.i("F.E"),t.cG))
@@ -111129,7 +111129,7 @@ q=""+A.bQ(j)+"/"+A.b7(j)+"/"+A.aN(j)+" \u2014 "+A.bQ(q)+"/"+A.b7(q)+"/"+A.aN(q)}
 j=t.p
 q=A.b([k,B.bn,A.H(q,h,h,h,h,A.cd(h,h,o?B.F:B.am,h,h,h,h,h,h,h,h,14,h,h,h,h,h,!0,h,h,h,h,h,h,h,h),h,h,h),B.ck],j)
 if(i.w!=null)q.push(A.co(h,B.YU,B.V,!1,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,new A.aMm(i),h,h,h,h,h,h,!1,B.aF))
-return A.Q(h,A.U(A.b([B.aOZ,B.ad,B.dv,B.c5,B.b_D,B.aH,p,B.bf,B.aZC,B.aH,r,B.bf,B.aYr,B.aH,A.co(h,A.Q(h,A.aj(q,B.A,B.t,B.u,0),B.z,h,h,new A.a2(n,h,l,m,h,h,B.L),h,h,h,B.hg,h,h,h),B.V,!1,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,new A.aMn(i),h,h,h,h,h,h,!1,B.aF)],j),B.T,B.t,B.u),B.z,h,h,new A.a2(B.w,h,s,g,h,h,B.L),h,h,h,B.bd,h,h,h)},
+return A.Q(h,A.U(A.b([B.aOZ,B.ad,B.dv,B.c5,B.b_D,B.aH,p,B.bf,B.aZB,B.aH,r,B.bf,B.aYr,B.aH,A.co(h,A.Q(h,A.aj(q,B.A,B.t,B.u,0),B.z,h,h,new A.a2(n,h,l,m,h,h,B.L),h,h,h,B.hg,h,h,h),B.V,!1,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,new A.aMn(i),h,h,h,h,h,h,!1,B.aF)],j),B.T,B.t,B.u),B.z,h,h,new A.a2(B.w,h,s,g,h,h,B.L),h,h,h,B.bd,h,h,h)},
 afS(){var s,r,q,p=null
 if(this.gtg().length===0){s=A.a1(16)
 r=A.bn(B.a1,1)
@@ -111287,7 +111287,7 @@ r=p.w
 q=r?o:p.gauI()
 return A.e8(A.ij(o,A.U(A.b([n,B.bC,B.aZd,B.be,m,B.bC,B.aYA,B.aH,l,B.bf,B.b0e,B.aH,s,B.dC,A.dV(r?B.eq:B.aOW,q,o)],t.p),B.T,B.t,B.u),p.d),o,B.V,B.bd,o,B.ar)},
 auN(){var s=null
-return A.cb(new A.ay(B.eJ,A.U(A.b([A.Q(s,B.lx,B.z,s,s,B.iu,s,90,s,s,s,s,90),B.dC,B.aZE,B.ad,B.aZJ,B.fH,A.dV(B.uh,new A.aMW(this),s),B.ad,A.cN(B.aZa,new A.aMX(this),s)],t.p),B.A,B.bS,B.u),s),s,s)}}
+return A.cb(new A.ay(B.eJ,A.U(A.b([A.Q(s,B.lx,B.z,s,s,B.iu,s,90,s,s,s,s,90),B.dC,B.aZD,B.ad,B.aZJ,B.fH,A.dV(B.uh,new A.aMW(this),s),B.ad,A.cN(B.aZa,new A.aMX(this),s)],t.p),B.A,B.bS,B.u),s),s,s)}}
 A.aMY.prototype={
 $0(){return this.a.w=!0},
 $S:0}
@@ -111803,7 +111803,7 @@ n.push(A.dV(o?B.eq:B.Pl,s,q))
 n.push(B.dC)
 n.push(A.cb(B.aYN,q,q))
 n.push(B.aRt)
-n.push(A.cb(A.cN(B.aZv,new A.aHi(a),q),q,q))
+n.push(A.cb(A.cN(B.aZu,new A.aHi(a),q),q,q))
 return A.d5(q,B.aW,A.U(A.b([p,A.av(A.e8(A.ij(q,A.U(n,B.T,B.t,B.u),r.f),q,B.V,B.WI,q,B.ar),1)],m),B.A,B.t,B.u),q,q)},
 apY(){var s=null,r=this.c
 r.toString
@@ -111906,7 +111906,7 @@ h=A.b([],i)
 if(q.length!==0){g=A.a1(12)
 f=A.b([A.H(q,e,e,e,e,B.aV_,e,e,e)],i)
 if(p.length!==0)B.l.M(f,A.b([B.bD,A.H("\u2014 "+p,e,e,e,e,B.eu,e,e,e)],i))
-B.l.M(h,A.b([A.Q(e,A.U(f,B.T,B.t,B.u),B.z,e,e,new A.a2(B.aj,e,new A.dk(B.S,B.S,B.S,new A.b8(B.F,3,B.ae,-1)),g,e,e,B.L),e,e,e,B.az,e,e,e),B.c5],i))}if(r.length!==0){g=A.b([B.aZw,B.d2,A.H(r,e,e,e,e,B.aWg,e,e,e)],i)
+B.l.M(h,A.b([A.Q(e,A.U(f,B.T,B.t,B.u),B.z,e,e,new A.a2(B.aj,e,new A.dk(B.S,B.S,B.S,new A.b8(B.F,3,B.ae,-1)),g,e,e,B.L),e,e,e,B.az,e,e,e),B.c5],i))}if(r.length!==0){g=A.b([B.aZv,B.d2,A.H(r,e,e,e,e,B.aWg,e,e,e)],i)
 if(s.length!==0)B.l.M(g,A.b([B.d2,A.H("\u2014 "+s,e,e,e,e,B.eu,e,e,e)],i))
 g.push(B.c5)
 B.l.M(h,g)}g=J.aH(n)
@@ -113580,7 +113580,7 @@ if(!l)p.push(B.aMN)
 p.push(B.be)
 for(m=r.length,o=0;o<r.length;r.length===m||(0,A.x)(r),++o){d=r[o]
 p.push(b.atY(d,q.h(0,d.a),l))}p.push(B.bD)
-p.push(A.XC(B.Yh,B.aZD,b.gaeu(),c))
+p.push(A.XC(B.Yh,B.aZC,b.gaeu(),c))
 return A.U(p,B.T,B.t,B.u)},
 $S:749}
 A.aEH.prototype={
@@ -117545,8 +117545,8 @@ B.Tk=new A.CY(null,null,null,null,null,null)
 B.eI=new A.a4(24,24,24,24)
 B.fM=new A.l(!0,B.am,null,null,null,null,14,null,null,null,null,null,1.5,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.bE=new A.ob(2,"center")
-B.aZx=new A.P('No contacts yet.\nTap "Add Contact" to add one.',null,B.fM,B.bE,null,null,null,null,null,null,null)
-B.aMM=new A.ay(B.eI,B.aZx,null)
+B.aZw=new A.P('No contacts yet.\nTap "Add Contact" to add one.',null,B.fM,B.bE,null,null,null,null,null,null,null)
+B.aMM=new A.ay(B.eI,B.aZw,null)
 B.Tl=new A.e1(B.aq,null,null,B.aMM,null)
 B.e3=new A.l(!0,B.am,null,null,null,null,14,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.aZl=new A.P("No donations yet",null,B.e3,null,null,null,null,null,null,null,null)
@@ -118110,9 +118110,9 @@ B.bY=new A.l(!0,B.w,null,null,null,null,18,B.ax,null,null,null,null,null,null,nu
 B.b_v=new A.P("Reports & Export",null,B.bY,null,null,null,null,null,null,null,null)
 B.X3=new A.fs(1,B.dw,B.b_v,null)
 B.aUL=new A.l(!0,B.w,null,null,null,null,24,B.aQ,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aZu=new A.P("CSI Church",null,B.aUL,null,null,null,null,null,null,null,null)
+B.aZt=new A.P("CSI Church",null,B.aUL,null,null,null,null,null,null,null,null)
 B.aZ2=new A.P("Sangareddy Pastorate",null,B.nW,null,null,null,null,null,null,null,null)
-B.aH6=s([B.aZu,B.aZ2],t.p)
+B.aH6=s([B.aZt,B.aZ2],t.p)
 B.UY=new A.dx(B.ar,B.t,B.u,B.T,null,B.b1,null,0,B.aH6,null)
 B.X4=new A.fs(1,B.dw,B.UY,null)
 B.X5=new A.fs(1,B.dw,B.cn,null)
@@ -124207,18 +124207,18 @@ B.aZo=new A.P("Replace",null,null,null,null,null,null,null,null,null,null)
 B.aZp=new A.P("Notes (Optional)",null,B.bL,null,null,null,null,null,null,null,null)
 B.aZq=new A.P("Role Management",null,B.bY,null,null,null,null,null,null,null,null)
 B.aZr=new A.P("Sign Out",null,B.Pe,null,null,null,null,null,null,null,null)
-B.aZs=new A.P("Add Donation",null,B.bY,null,null,null,null,null,null,null,null)
 B.Pl=new A.P("Sign In",null,null,null,null,null,null,null,null,null,null)
-B.aZt=new A.P("Sangareddy",null,B.u9,null,null,null,null,null,null,null,null)
-B.aZv=new A.P("Admin Sign In \u2192",null,B.P9,null,null,null,null,null,null,null,null)
-B.aZw=new A.P("Pastoral Message",null,B.ue,null,null,null,null,null,null,null,null)
-B.aZy=new A.P("Share this password with the member. They can change it from their Profile.",null,B.P8,null,null,null,null,null,null,null,null)
-B.aZz=new A.P("Initial Password *",null,B.bL,null,null,null,null,null,null,null,null)
-B.aZA=new A.P("Admin Portal",null,B.ua,null,null,null,null,null,null,null,null)
-B.aZB=new A.P("Quick Select",null,B.bL,null,null,null,null,null,null,null,null)
-B.aZC=new A.P("Payment Mode",null,B.ev,null,null,null,null,null,null,null,null)
-B.aZD=new A.P("Add family member",null,null,null,null,null,null,null,null,null,null)
-B.aZE=new A.P("Notification Sent!",null,B.fL,null,null,null,null,null,null,null,null)
+B.aZs=new A.P("Sangareddy",null,B.u9,null,null,null,null,null,null,null,null)
+B.aZu=new A.P("Admin Sign In \u2192",null,B.P9,null,null,null,null,null,null,null,null)
+B.aZv=new A.P("Pastoral Message",null,B.ue,null,null,null,null,null,null,null,null)
+B.aZx=new A.P("Share this password with the member. They can change it from their Profile.",null,B.P8,null,null,null,null,null,null,null,null)
+B.aZy=new A.P("Initial Password *",null,B.bL,null,null,null,null,null,null,null,null)
+B.aZz=new A.P("Admin Portal",null,B.ua,null,null,null,null,null,null,null,null)
+B.aZA=new A.P("Quick Select",null,B.bL,null,null,null,null,null,null,null,null)
+B.aZB=new A.P("Payment Mode",null,B.ev,null,null,null,null,null,null,null,null)
+B.aZC=new A.P("Add family member",null,null,null,null,null,null,null,null,null,null)
+B.aZD=new A.P("Notification Sent!",null,B.fL,null,null,null,null,null,null,null,null)
+B.aZE=new A.P("Add Monthly Subscription",null,B.bY,null,null,null,null,null,null,null,null)
 B.aZF=new A.P("Try adjusting your search or filters",null,B.dk,null,null,null,null,null,null,null,null)
 B.aZG=new A.P("Back to Profile",null,null,null,null,null,null,null,null,null,null)
 B.aTC=new A.l(!0,B.b2,null,null,null,null,12,B.ax,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)

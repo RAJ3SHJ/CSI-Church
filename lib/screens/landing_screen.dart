@@ -9,7 +9,7 @@ import 'admin/admin_login_screen.dart';
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
-  static const Color _lavender = Color(0xFF6B3FA0);
+  static const Color _lavender = Color(0xFF5B2C83);
 
   @override
   Widget build(BuildContext context) {

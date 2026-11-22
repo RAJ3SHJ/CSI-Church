@@ -138,18 +138,18 @@ class LandingScreen extends StatelessWidget {
         children: [
           if (title.isNotEmpty)
             Text(title,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.navy)),
           if (desc.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 3),
               child: Text(desc,
-                  style: const TextStyle(fontSize: 20, color: AppTheme.textPrimary, height: 1.3)),
+                  style: const TextStyle(fontSize: 18, color: AppTheme.textPrimary, height: 1.3)),
             ),
           if (venue.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 3),
               child: Text('Venue: $venue',
-                  style: const TextStyle(fontSize: 20, color: AppTheme.textPrimary, height: 1.3)),
+                  style: const TextStyle(fontSize: 18, color: AppTheme.textPrimary, height: 1.3)),
             ),
         ],
       ),

@@ -53,11 +53,36 @@ class _CardDraftSectionState extends State<CardDraftSection> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
   }
 
-  Future<void> _pick(bool front) async {
+  /// Asks whether to take a photo with the camera or choose one from the gallery/files.
+  Future<void> _choose(bool front) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined, color: AppTheme.navy),
+              title: const Text('Take a photo with the camera'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppTheme.navy),
+              title: const Text('Upload from gallery / files'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source != null) await _pick(front, source);
+  }
+
+  Future<void> _pick(bool front, ImageSource source) async {
     try {
       // Resized and compressed by the picker so the stored file stays small.
       final XFile? picked = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 1000,
         maxHeight: 2000,
         imageQuality: 70,
@@ -137,13 +162,13 @@ class _CardDraftSectionState extends State<CardDraftSection> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _side('Front *', d.front, () => _pick(true),
+            Expanded(child: _side('Front *', d.front, () => _choose(true),
                 onRemove: d.front == null ? null : () {
                   setState(() => d.front = null);
                   widget.onChanged();
                 })),
             const SizedBox(width: 10),
-            Expanded(child: _side('Back (optional)', d.back, () => _pick(false),
+            Expanded(child: _side('Back (optional)', d.back, () => _choose(false),
                 onRemove: d.back == null ? null : () {
                   setState(() => d.back = null);
                   widget.onChanged();
@@ -180,7 +205,7 @@ class _CardDraftSectionState extends State<CardDraftSection> {
             TextButton.icon(
               onPressed: onPick,
               icon: const Icon(Icons.upload_rounded, size: 18),
-              label: Text(bytes == null ? 'Upload' : 'Change'),
+              label: Text(bytes == null ? 'Add photo' : 'Change'),
             ),
             if (onRemove != null)
               IconButton(

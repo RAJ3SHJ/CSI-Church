@@ -182,7 +182,7 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
             padding: EdgeInsets.zero,
           ),
           const SizedBox(width: 8),
-          const Text('Add Donation',
+          const Text('Add Monthly Subscription',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.white)),
         ],
       ),

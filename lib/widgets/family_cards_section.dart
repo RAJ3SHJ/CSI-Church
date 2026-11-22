@@ -80,7 +80,7 @@ Future<bool> showCardUploadDialog(
   }
 }
 
-/// Add Donation: the member's whole family. One row per card holder showing the
+/// Add Monthly Subscription: the member's whole family. One row per card holder showing the
 /// card for the chosen financial year, with View and Upload / Update on each row,
 /// and "+ Add family member". Cards stay listed every time the member is opened.
 class FamilyCardsSection extends StatefulWidget {

@@ -48,7 +48,7 @@ class _RoleManagementScreenState extends State<RoleManagementScreen> {
       Permission(id: 'edit_member', label: 'Edit Member', group: 'Member Management', isEnabled: fullAccess),
       Permission(id: 'deactivate_member', label: 'Deactivate Member', group: 'Member Management', isEnabled: fullAccess),
       Permission(id: 'view_donations', label: 'View Donations', group: 'Donation Management', isEnabled: fullAccess || true),
-      Permission(id: 'add_donation', label: 'Add Donation', group: 'Donation Management', isEnabled: fullAccess),
+      Permission(id: 'add_donation', label: 'Add Monthly Subscription', group: 'Donation Management', isEnabled: fullAccess),
       Permission(id: 'edit_donation', label: 'Edit Donation', group: 'Donation Management', isEnabled: fullAccess),
       Permission(id: 'delete_donation', label: 'Delete Donation', group: 'Donation Management', isEnabled: fullAccess),
       Permission(id: 'search_filter', label: 'Search & Filter', group: 'Other Access', isEnabled: fullAccess || true),

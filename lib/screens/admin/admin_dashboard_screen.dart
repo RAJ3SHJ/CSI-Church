@@ -487,7 +487,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildQuickActions({required bool isDesktop}) {
     final actions = [
       {'icon': Icons.person_add_outlined, 'label': 'Add Member'},
-      {'icon': Icons.add_card_outlined, 'label': 'Add Donation'},
+      {'icon': Icons.add_card_outlined, 'label': 'Add Monthly Subscription'},
       {'icon': Icons.people_outline, 'label': 'View Members'},
       {'icon': Icons.search_outlined, 'label': 'Search'},
       {'icon': Icons.event_outlined, 'label': 'Events'},
@@ -513,7 +513,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             final label = action['label'] as String;
             if (label == 'Add Member') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMemberScreen()));
-            } else if (label == 'Add Donation') {
+            } else if (label == 'Add Monthly Subscription') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => AddDonationScreen()));
             } else if (label == 'View Members') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const MemberListScreen()));

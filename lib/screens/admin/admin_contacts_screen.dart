@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
-/// Admin / Super Admin master: church contacts (Name + Phone Number).
+/// Admin / Super Admin master: church contacts (Name + Designation + Phone Number).
 /// Shown to everyone on the public "Contact Us" page.
 class AdminContactsScreen extends StatefulWidget {
   const AdminContactsScreen({super.key});
@@ -24,6 +24,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
 
   Future<void> _add() async {
     final name = TextEditingController();
+    final designation = TextEditingController();
     final phone = TextEditingController();
     final formKey = GlobalKey<FormState>();
     bool saving = false;
@@ -38,6 +39,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
             try {
               await _db.collection('contacts').add({
                 'name': name.text.trim(),
+                'designation': designation.text.trim(),
                 'phone': phone.text.trim(),
                 'createdAt': FieldValue.serverTimestamp(),
               });
@@ -66,6 +68,15 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                       decoration: const InputDecoration(labelText: 'Name *'),
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: designation,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                          labelText: 'Designation *', hintText: 'e.g. Secretary, Treasurer'),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Designation is required' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -103,6 +114,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
       ),
     );
     name.dispose();
+    designation.dispose();
     phone.dispose();
   }
 
@@ -209,9 +221,12 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                           Text((d['name'] ?? '').toString(),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                          if ((d['designation'] ?? '').toString().trim().isNotEmpty)
+                            Text((d['designation']).toString(),
+                                style: const TextStyle(fontSize: 13, color: AppTheme.navy)),
                           const SizedBox(height: 2),
                           Text((d['phone'] ?? '').toString(),
-                              style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                              style: const TextStyle(fontSize: 13, color: Color(0xFFD32F2F))),
                         ],
                       ),
                     ),

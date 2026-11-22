@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Public "Contact Us" page: names and phone numbers managed by admins.
+/// Public "Contact Us" page: name, designation and phone numbers managed by admins.
 class ContactUsScreen extends StatelessWidget {
   const ContactUsScreen({super.key});
+
+  static const Color _red = Color(0xFFD32F2F);
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +42,25 @@ class ContactUsScreen extends StatelessWidget {
               }
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: docs.length,
+                itemCount: docs.length + 1,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, i) {
+                itemBuilder: (context, idx) {
+                  if (idx == 0) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 4, bottom: 2),
+                      child: Center(
+                        child: Text('Office Bearers',
+                            style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: _red,
+                                decoration: TextDecoration.underline,
+                                decorationColor: _red,
+                                decorationThickness: 2)),
+                      ),
+                    );
+                  }
+                  final i = idx - 1;
                   final d = docs[i].data() as Map<String, dynamic>;
                   return Container(
                     padding: const EdgeInsets.all(14),
@@ -62,9 +80,16 @@ class ContactUsScreen extends StatelessWidget {
                               Text((d['name'] ?? '').toString(),
                                   style: const TextStyle(
                                       fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                              if ((d['designation'] ?? '').toString().trim().isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text((d['designation']).toString(),
+                                    style: const TextStyle(
+                                        fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                              ],
                               const SizedBox(height: 2),
                               SelectableText((d['phone'] ?? '').toString(),
-                                  style: const TextStyle(fontSize: 15, color: AppTheme.textPrimary)),
+                                  style: const TextStyle(
+                                      fontSize: 15, fontWeight: FontWeight.w600, color: _red)),
                             ],
                           ),
                         ),

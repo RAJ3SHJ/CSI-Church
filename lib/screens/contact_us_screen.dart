@@ -48,7 +48,8 @@ class ContactUsScreen extends StatelessWidget {
                   if (idx == 0) {
                     return const Padding(
                       padding: EdgeInsets.only(top: 4, bottom: 2),
-                      child: Center(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
                         child: Text('Office Bearers',
                             style: TextStyle(
                                 fontSize: 24,

@@ -84,7 +84,10 @@ class ContactUsScreen extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text((d['designation']).toString(),
                                     style: const TextStyle(
-                                        fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                                        fontSize: 10.5,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.navy)),
                               ],
                               const SizedBox(height: 2),
                               SelectableText((d['phone'] ?? '').toString(),

@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../services/firebase_service.dart';
 import '../../services/card_service.dart';
 import '../../widgets/card_draft_section.dart';
+import '../../widgets/existing_cards_list.dart';
 
 class AddDonationScreen extends StatefulWidget {
   const AddDonationScreen({super.key});
@@ -552,7 +553,11 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                   if (!_memberFound)
                     const Text('Search and select a member first to add cards.',
                         style: TextStyle(fontSize: 13, color: AppTheme.textSecondary))
-                  else
+                  else ...[
+                    ExistingCardsList(
+                      memberId: _foundMemberId,
+                      memberName: _foundMemberName,
+                    ),
                     for (var i = 0; i < _cards.length; i++) ...[
                       if (i > 0) const Divider(height: 28),
                       if (_cards.length > 1)
@@ -579,6 +584,7 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                         onChanged: () => setState(() {}),
                       ),
                     ],
+                  ],
                 ],
               ),
             ),

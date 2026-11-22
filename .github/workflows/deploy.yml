@@ -26,7 +26,7 @@ jobs:
           flutter-version: 3.41.9
           channel: stable
       - run: flutter pub get
-      - run: flutter build web --release --base-href "/TempleApp/"
+      - run: flutter build web --release --base-href "/CSI-Church/"
       - name: Publish build to main
         run: |
           cp -r build/web/* .

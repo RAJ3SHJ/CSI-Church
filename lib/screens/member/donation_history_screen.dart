@@ -83,8 +83,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                     return const Center(child: CircularProgressIndicator(color: AppTheme.navy));
                   }
                   final byYear = <int, List<Map<String, dynamic>>>{};
-                  for (final d in snap.data!.docs) {
-                    final m = d.data() as Map<String, dynamic>;
+                  for (final m in CardService.latestPerHolder(
+                      snap.data!.docs.map((d) => d.data() as Map<String, dynamic>))) {
                     final fy = (m['fyStart'] as num?)?.toInt();
                     if (fy != null) byYear.putIfAbsent(fy, () => []).add(m);
                   }

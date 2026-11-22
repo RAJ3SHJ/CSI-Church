@@ -67,6 +67,26 @@ class CardService {
     return mn.isNotEmpty ? mn : 'Card';
   }
 
+  /// One card per holder: when an older card and a newer one exist for the same
+  /// holder and year, only the most recently uploaded is kept.
+  static List<Map<String, dynamic>> latestPerHolder(Iterable<Map<String, dynamic>> cards) {
+    final best = <String, Map<String, dynamic>>{};
+    for (final c in cards) {
+      final key = '${(c['fyStart'] as num?)?.toInt() ?? 0}_${holderIdOf(c)}';
+      final cur = best[key];
+      if (cur == null || _newer(c, cur)) best[key] = c;
+    }
+    return best.values.toList();
+  }
+
+  static bool _newer(Map<String, dynamic> a, Map<String, dynamic> b) {
+    final ta = a['uploadedAt'];
+    final tb = b['uploadedAt'];
+    if (ta is Timestamp && tb is Timestamp) return ta.compareTo(tb) > 0;
+    // A card still being written (no server time yet) is the newest.
+    return ta is! Timestamp && tb is Timestamp;
+  }
+
   /// Member document (members are looked up by memberId, e.g. CSI-00002).
   static Future<DocumentReference<Map<String, dynamic>>?> memberRef(String memberId) async {
     final q = await FirebaseFirestore.instance

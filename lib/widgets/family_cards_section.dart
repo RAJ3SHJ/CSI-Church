@@ -163,7 +163,7 @@ class _FamilyCardsSectionState extends State<FamilyCardsSection> {
                 child: LinearProgressIndicator(),
               );
             }
-            final all = snap.data!.docs.map((d) => d.data()).toList();
+            final all = CardService.latestPerHolder(snap.data!.docs.map((d) => d.data()));
             final holders = CardService.mergeHolders(member, all, widget.memberName);
             // Cards of the chosen year by holder.
             final byHolder = <String, Map<String, dynamic>>{

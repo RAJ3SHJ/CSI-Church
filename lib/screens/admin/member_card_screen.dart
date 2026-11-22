@@ -159,8 +159,8 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
             ));
           }
           final byYear = <int, List<Map<String, dynamic>>>{};
-          for (final d in snap.data?.docs ?? <QueryDocumentSnapshot>[]) {
-            final m = d.data() as Map<String, dynamic>;
+          for (final m in CardService.latestPerHolder(
+              (snap.data?.docs ?? <QueryDocumentSnapshot>[]).map((d) => d.data() as Map<String, dynamic>))) {
             final fy = (m['fyStart'] as num?)?.toInt();
             if (fy != null) byYear.putIfAbsent(fy, () => []).add(m);
           }

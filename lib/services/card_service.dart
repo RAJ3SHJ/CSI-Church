@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,8 +23,54 @@ class CardService {
 
   static int currentFyStart() => fyStartOf(DateTime.now());
 
-  /// Cards can only be added or changed in the current or a future year.
-  static bool isOpen(int fyStart) => fyStart >= currentFyStart();
+  // ── Year freeze (Super Admin) ─────────────────────────────────────────
+  // fy_controls/{fyStart}: frozen=true closes the current/future year early,
+  // reopened=true lets a finished year accept cards again.
+  static final Map<int, Map<String, dynamic>> _controls = {};
+  static final ValueNotifier<int> controlsVersion = ValueNotifier<int>(0);
+  static StreamSubscription? _controlsSub;
+
+  static void ensureControls() {
+    _controlsSub ??= FirebaseFirestore.instance.collection('fy_controls').snapshots().listen(
+      (snap) {
+        _controls
+          ..clear()
+          ..addEntries(snap.docs.map((d) => MapEntry(int.tryParse(d.id) ?? 0, d.data())));
+        controlsVersion.value++;
+      },
+      onError: (_) {},
+    );
+  }
+
+  /// A year accepts cards if it is current/future and not frozen, or if the
+  /// Super Admin has reopened it.
+  static bool isOpen(int fyStart) {
+    final c = _controls[fyStart];
+    final frozen = c?['frozen'] == true;
+    final reopened = c?['reopened'] == true;
+    return (fyStart >= currentFyStart() && !frozen) || reopened;
+  }
+
+  static Future<bool> isSuperAdmin() async {
+    final u = FirebaseAuth.instance.currentUser;
+    if (u == null) return false;
+    final d = await FirebaseFirestore.instance.collection('admins').doc(u.uid).get();
+    final r = d.data()?['role'];
+    return r == 'superadmin' || r == 'super_admin';
+  }
+
+  /// Super Admin only: freeze (close) or reopen a financial year.
+  static Future<void> setOpen(int fyStart, bool open) {
+    final isPast = fyStart < currentFyStart();
+    final data = open
+        ? (isPast ? {'reopened': true} : {'frozen': false})
+        : (isPast ? {'reopened': false} : {'frozen': true});
+    return FirebaseFirestore.instance
+        .collection('fy_controls')
+        .doc('$fyStart')
+        .set({...data, 'updatedBy': FirebaseAuth.instance.currentUser?.uid,
+              'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+  }
 
   /// "2026-27"
   static String fyName(int start) =>

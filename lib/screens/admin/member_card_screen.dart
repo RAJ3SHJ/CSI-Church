@@ -23,9 +23,15 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
   Map<String, String> _holderNames = {};
   StreamSubscription? _memberSub;
 
+  void _onControls() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
+    CardService.ensureControls();
+    CardService.controlsVersion.addListener(_onControls);
     // Saved card holder names (renames show here straight away).
     _memberSub = FirebaseFirestore.instance
         .collection('members')
@@ -44,6 +50,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
 
   @override
   void dispose() {
+    CardService.controlsVersion.removeListener(_onControls);
     _memberSub?.cancel();
     super.dispose();
   }

@@ -94,6 +94,36 @@ class FamilyCardsSection extends StatefulWidget {
 
 class _FamilyCardsSectionState extends State<FamilyCardsSection> {
   int _fy = CardService.currentFyStart();
+  bool _isSuper = false;
+
+  void _onControls() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    CardService.ensureControls();
+    CardService.controlsVersion.addListener(_onControls);
+    CardService.isSuperAdmin().then((v) {
+      if (mounted) setState(() => _isSuper = v);
+    });
+  }
+
+  @override
+  void dispose() {
+    CardService.controlsVersion.removeListener(_onControls);
+    super.dispose();
+  }
+
+  Future<void> _toggleFreeze(bool open) async {
+    try {
+      await CardService.setOpen(_fy, !open);
+      _toast(open ? '${CardService.fyLabel(_fy)} is frozen.' : '${CardService.fyLabel(_fy)} is open for cards.');
+    } catch (e) {
+      _toast('Could not change: $e');
+    }
+  }
 
   void _toast(String m) {
     if (!mounted) return;
@@ -199,6 +229,23 @@ class _FamilyCardsSectionState extends State<FamilyCardsSection> {
                       ),
                   ],
                 ),
+                if (_isSuper)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => _toggleFreeze(open),
+                      icon: Icon(open ? Icons.lock_outline : Icons.lock_open_outlined, size: 16),
+                      label: Text(open
+                          ? 'Freeze ${CardService.fyLabel(_fy)}'
+                          : 'Reopen ${CardService.fyLabel(_fy)}'),
+                    ),
+                  )
+                else if (!open)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text('${CardService.fyLabel(_fy)} is closed. Only the Super Admin can reopen it.',
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                  ),
                 if (!open)
                   const Padding(
                     padding: EdgeInsets.only(top: 6),

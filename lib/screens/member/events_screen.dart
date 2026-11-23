@@ -1,3 +1,5 @@
+import '../../services/event_photo_service.dart';
+import '../event_gallery_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
@@ -151,14 +153,14 @@ class _EventsScreenState extends State<EventsScreen>
           separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final data = docs[index].data() as Map<String, dynamic>;
-            return _buildEventCard(data);
+            return _buildEventCard(data, context);
           },
         );
       },
     );
   }
 
-  Widget _buildEventCard(Map<String, dynamic> data) {
+  Widget _buildEventCard(Map<String, dynamic> data, BuildContext context) {
     final title = (data['title'] as String? ?? '').trim();
     final description = (data['description'] as String? ?? '').trim();
     final venue = (data['location'] as String? ?? '').trim();
@@ -190,6 +192,7 @@ class _EventsScreenState extends State<EventsScreen>
                 style: const TextStyle(fontSize: 14,
                     color: AppTheme.textSecondary, height: 1.4)),
           ],
+          PhotosChip(title: title, photos: EventPhotoService.photosOf(data)),
         ],
       ),
     );

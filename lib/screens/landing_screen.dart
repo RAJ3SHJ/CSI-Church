@@ -1,3 +1,5 @@
+import '../services/event_photo_service.dart';
+import 'event_gallery_screen.dart';
 import '../services/member_session.dart';
 import 'phone_login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -121,7 +123,7 @@ class LandingScreen extends StatelessWidget {
                 final desc = (m['description'] ?? '').toString().trim();
                 final venue = (m['location'] ?? '').toString().trim();
                 if (title.isEmpty && desc.isEmpty && venue.isEmpty) return const SizedBox.shrink();
-                return _card(title, desc, venue);
+                return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
               }).toList(),
             );
           },
@@ -130,7 +132,8 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
-  Widget _card(String title, String desc, String venue) {
+  Widget _card(BuildContext context, String title, String desc, String venue,
+      List<Map<String, dynamic>> photos) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
@@ -158,6 +161,7 @@ class LandingScreen extends StatelessWidget {
               child: Text('Venue: $venue',
                   style: const TextStyle(fontSize: 18, color: AppTheme.textPrimary, height: 1.3)),
             ),
+          PhotosChip(title: title, photos: photos),
         ],
       ),
     );

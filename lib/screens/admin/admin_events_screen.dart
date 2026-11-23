@@ -1,3 +1,5 @@
+import '../../services/event_photo_service.dart';
+import 'admin_event_photos_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -471,6 +473,13 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                   collection: collection,
                   noun: '${noun[0].toUpperCase()}${noun.substring(1)}'),
               onDelete: () => _confirmDelete(doc, noun),
+              photoCount: EventPhotoService.photosOf(d).length,
+              onPhotos: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => AdminEventPhotosScreen(
+                          eventRef: doc.reference as DocumentReference<Map<String, dynamic>>,
+                          title: (d['title'] as String? ?? '')))),
             );
           },
         );
@@ -535,6 +544,8 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
     String? badge,
     required VoidCallback onEdit,
     required VoidCallback onDelete,
+    VoidCallback? onPhotos,
+    int photoCount = 0,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -604,6 +615,15 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                           foregroundColor: AppTheme.navy,
                           padding: const EdgeInsets.symmetric(horizontal: 8)),
                     ),
+                    if (onPhotos != null)
+                      TextButton.icon(
+                        onPressed: onPhotos,
+                        icon: const Icon(Icons.photo_library_outlined, size: 16),
+                        label: Text(photoCount == 0 ? 'Photos' : 'Photos ($photoCount)'),
+                        style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.navy,
+                            padding: const EdgeInsets.symmetric(horizontal: 8)),
+                      ),
                     TextButton.icon(
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline, size: 16),

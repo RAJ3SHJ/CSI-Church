@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'member_session.dart' show MemberSession;
+
 
 class FirebaseService {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -8,45 +10,32 @@ class FirebaseService {
 
   // ─── MEMBERS ────────────────────────────────────────────────────────────────
 
+  /// Members sign in with their phone number + OTP, so no email or password
+  /// account is created. The admin verifies the phone number afterwards.
   static Future<void> addMember({
     required String memberId,
     required String name,
-    required String email,
+    String email = '',
     required String phone,
-    required String password,
     String? address,
     String? sector,
     String? dateOfBirth,
   }) async {
-    // Separate Firebase connection so the admin stays signed in
-    final secondary = await Firebase.initializeApp(
-      name: 'memberCreator',
-      options: Firebase.app().options,
-    );
-    try {
-      final secondaryAuth = FirebaseAuth.instanceFor(app: secondary);
-      final credential = await secondaryAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      await _db.collection('members').doc(credential.user!.uid).set({
-        'memberId': memberId,
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'address': address ?? '',
-        'sector': sector ?? '',
-        'dateOfBirth': dateOfBirth ?? '',
-        'role': 'member',
-        'isActive': true,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      await secondaryAuth.signOut();
-    } finally {
-      await secondary.delete();
-    }
+    final e164 = MemberSession.toE164(phone);
+    await _db.collection('members').add({
+      'memberId': memberId,
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'phoneE164': e164 ?? '',
+      'phoneVerified': false,
+      'address': address ?? '',
+      'sector': sector ?? '',
+      'dateOfBirth': dateOfBirth ?? '',
+      'role': 'member',
+      'isActive': true,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 
   static Stream<QuerySnapshot> getMembers() {

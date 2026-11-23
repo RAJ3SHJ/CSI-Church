@@ -26,23 +26,21 @@ class LandingScreen extends StatelessWidget {
               children: [
                 _header(context),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _twoColumns(),
-                      const SizedBox(height: 20),
-                      const Divider(color: AppTheme.border),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (_) => const ContactUsScreen())),
-                          child: const Text('Contact Us',
-                              style: TextStyle(color: AppTheme.navy, fontSize: 14, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                  child: _twoColumns(),
+                ),
+                // Bottom band
+                Container(
+                  width: double.infinity,
+                  color: _lavender,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Center(
+                    child: TextButton(
+                      onPressed: () => Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => const ContactUsScreen())),
+                      child: const Text('Contact Us',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
                   ),
                 ),
               ],
@@ -53,25 +51,32 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
+  Widget _boxed(Widget child) => Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          border: Border.all(color: _lavender, width: 2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: child,
+      );
+
   Widget _twoColumns() {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _column('Events', 'events', newestFirst: false)),
-          Container(
-            width: 3,
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            color: AppTheme.navy,
-          ),
+          Expanded(child: _boxed(_column('Events', 'events', newestFirst: false))),
+          const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _column('Upcoming Events', 'announcements', newestFirst: true),
-                const SizedBox(height: 16),
-                _column('Announcements', 'notices', newestFirst: true),
-              ],
+            child: _boxed(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _column('Upcoming Events', 'announcements', newestFirst: true),
+                  const SizedBox(height: 16),
+                  _column('Announcements', 'notices', newestFirst: true),
+                ],
+              ),
             ),
           ),
         ],

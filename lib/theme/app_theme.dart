@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Core Colors
-  static const Color navy = Color(0xFF1B3A6B);
-  static const Color navyMid = Color(0xFF2952A3);
-  static const Color navyLight = Color(0xFFE8EDF7);
+  static const Color navy = Color(0xFF5B2C83);
+  static const Color navyMid = Color(0xFF7B4BA3);
+  static const Color navyLight = Color(0xFFF0E8F7);
   static const Color gold = Color(0xFF9A7A2E);
-  static const Color background = Color(0xFFF2F5FA);
+  static const Color background = Color(0xFFF7F3FA);
   static const Color white = Color(0xFFFFFFFF);
   static const Color textPrimary = Color(0xFF111827);
   static const Color textSecondary = Color(0xFF6B7280);

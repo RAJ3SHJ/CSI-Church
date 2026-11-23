@@ -8,7 +8,7 @@ import 'profile_screen.dart';
 import 'events_screen.dart';
 import 'prayer_request_screen.dart';
 import 'bulletin_screen.dart';
-import 'contact_screen.dart';
+import '../contact_us_screen.dart';
 import 'video_library_screen.dart';
 import 'live_telecast_screen.dart';
 import 'notifications_screen.dart';
@@ -109,7 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const VideoLibraryScreen()));
         break;
       case 'Contact Church':
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactScreen()));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ContactUsScreen()));
         break;
       case 'Bulletin':
         Navigator.push(context, MaterialPageRoute(builder: (_) => const BulletinScreen()));
@@ -123,7 +123,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final memberId = _memberData?['memberId'] as String? ?? widget.memberId;
 
     final services = [
-      {'icon': Icons.favorite_outline, 'title': 'Monthly Subscription', 'color': AppTheme.navy},
       {'icon': Icons.event_outlined, 'title': 'Events', 'color': AppTheme.navy},
       {'icon': Icons.volunteer_activism_outlined, 'title': 'Prayer Request', 'color': AppTheme.navy},
       {'icon': Icons.live_tv_outlined, 'title': 'Live Telecast', 'color': AppTheme.navy},
@@ -260,7 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisCount: 3,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              childAspectRatio: 1.0,
+              childAspectRatio: 1.25,
             ),
             itemCount: services.length,
             itemBuilder: (context, index) {
@@ -277,15 +276,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        width: 44, height: 44,
+                        width: 32, height: 32,
                         decoration: BoxDecoration(
                           color: AppTheme.navyLight,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(9),
                         ),
                         child: Icon(service['icon'] as IconData,
-                            size: 22, color: AppTheme.navy),
+                            size: 16, color: AppTheme.navy),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(service['title'] as String,
                           textAlign: TextAlign.center,
                           maxLines: 2,

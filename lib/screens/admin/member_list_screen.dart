@@ -595,7 +595,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
-        password: _passwordController.text.trim(),
         address: _addressController.text.trim(),
         sector: _sectorController.text.trim(),
       );
@@ -677,49 +676,40 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                   _formField('Phone Number *', '+91 00000 00000', _phoneController,
                       icon: Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
-                      validator: (v) => v!.trim().isEmpty ? 'Phone is required' : null),
+                      validator: (v) => MemberSession.toE164(v ?? '') == null
+                          ? 'Enter a valid 10-digit phone number'
+                          : null),
                   const SizedBox(height: 14),
-                  _formField('Email Address *', 'name@email.com', _emailController,
+                  _formField('Email Address (optional)', 'name@email.com', _emailController,
                       icon: Icons.mail_outline_rounded,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (v) => v!.trim().isEmpty ? 'Email is required' : null),
+                      validator: (v) {
+                        final t = v!.trim();
+                        if (t.isEmpty) return null;
+                        return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)
+                            ? null
+                            : 'Enter a valid email or leave it empty';
+                      }),
                   const SizedBox(height: 14),
                   _formField('Address', 'Area, City', _addressController,
                       icon: Icons.location_on_outlined),
                   const SizedBox(height: 14),
-                  _formField('Sector', 'e.g. North, South, Zone 1', _sectorController,
-                      icon: Icons.map_outlined),
-                  const SizedBox(height: 14),
-
-                  // Password field
-                  const Text('Initial Password *',
+                  const Text('Sector',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.navy)),
                   const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      hintText: 'Set initial password (min 6 chars)',
-                      prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.navy, size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                            color: AppTheme.textSecondary, size: 20),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                      ),
+                  DropdownButtonFormField<String>(
+                    value: _sectorController.text.isEmpty ? null : _sectorController.text,
+                    items: const ['Sector 1', 'Sector 2', 'Sector 3', 'Sector 4']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (v) => setState(() => _sectorController.text = v ?? ''),
+                    decoration: const InputDecoration(
+                      hintText: 'Select sector',
+                      prefixIcon: Icon(Icons.map_outlined, color: AppTheme.navy, size: 20),
                     ),
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Password is required';
-                      if (v.length < 6) return 'Minimum 6 characters required';
-                      return null;
-                    },
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Share this password with the member. They can change it from their Profile.',
-                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4),
-                  ),
+                  const SizedBox(height: 14),
+
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _isSubmitting ? null : _submit,

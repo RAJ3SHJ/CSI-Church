@@ -1,3 +1,4 @@
+import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -494,6 +495,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {'icon': Icons.campaign_outlined, 'label': 'Upcoming Events'},
       {'icon': Icons.notifications_none_outlined, 'label': 'Announcements'},
       {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us'},
+      {'icon': Icons.volunteer_activism_outlined, 'label': 'Prayer Requests'},
     ];
 
     return GridView.builder(
@@ -527,6 +529,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
             } else if (label == 'Contact Us') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
+            } else if (label == 'Prayer Requests') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPrayerRequestsScreen()));
             }
           },
           child: Container(
@@ -550,6 +554,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                           color: AppTheme.textPrimary)),
                 ),
+                if (action['label'] == 'Prayer Requests') const PrayerUnreadBadge(),
               ],
             ),
           ),

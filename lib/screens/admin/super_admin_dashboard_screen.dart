@@ -1,3 +1,4 @@
+import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../landing_screen.dart';
@@ -345,6 +346,7 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
       {'icon': Icons.campaign_outlined, 'label': 'Upcoming Events', 'desc': 'Publish for members'},
       {'icon': Icons.notifications_none_outlined, 'label': 'Announcements', 'desc': 'Publish for members'},
       {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us', 'desc': 'Names and phone numbers'},
+      {'icon': Icons.volunteer_activism_outlined, 'label': 'Prayer Requests', 'desc': 'From members'},
     ];
 
     return GridView.builder(
@@ -368,6 +370,7 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
             if (index == 5) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 1)));
             if (index == 6) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
             if (index == 7) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
+            if (index == 8) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPrayerRequestsScreen()));
           },
           child: Container(
             padding: const EdgeInsets.all(14),
@@ -379,10 +382,16 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 36, height: 36,
-                  decoration: BoxDecoration(color: AppTheme.navyLight, borderRadius: BorderRadius.circular(10)),
-                  child: Icon(action['icon'] as IconData, size: 18, color: AppTheme.navy),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(color: AppTheme.navyLight, borderRadius: BorderRadius.circular(10)),
+                      child: Icon(action['icon'] as IconData, size: 18, color: AppTheme.navy),
+                    ),
+                    if (action['label'] == 'Prayer Requests') const PrayerUnreadBadge(),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(action['label'] as String,

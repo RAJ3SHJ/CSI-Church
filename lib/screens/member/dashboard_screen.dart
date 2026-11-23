@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
 import '../../services/member_session.dart';
+import '../landing_screen.dart';
 import 'donation_history_screen.dart';
 import 'profile_screen.dart';
 import 'events_screen.dart';
@@ -39,6 +40,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (user != null) {
         // Load member data
         final memberDoc = await MemberSession.currentDoc();
+        if ((memberDoc == null || !memberDoc.exists) &&
+            MemberSession.isPhoneUser(user)) {
+          // The number is no longer linked to a verified member (for example
+          // the admin changed it): sign out so the member logs in again.
+          await FirebaseAuth.instance.signOut();
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LandingScreen()), (r) => false);
+          }
+          return;
+        }
         if (memberDoc != null && memberDoc.exists && mounted) {
           setState(() => _memberData = memberDoc.data());
         }

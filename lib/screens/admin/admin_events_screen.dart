@@ -181,6 +181,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
     final title = TextEditingController(text: data['title'] as String? ?? '');
     final desc =
         TextEditingController(text: data['description'] as String? ?? '');
+    final loc = TextEditingController(text: data['location'] as String? ?? '');
     final formKey = GlobalKey<FormState>();
     final photos = EventPhotosController();
     bool saving = false;
@@ -197,6 +198,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
               final payload = {
                 'title': title.text.trim(),
                 'description': desc.text.trim(),
+                'location': loc.text.trim(),
               };
               DocumentReference<Map<String, dynamic>> ref;
               if (doc == null) {
@@ -252,6 +254,11 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                         decoration: const InputDecoration(
                             labelText: 'Message', alignLabelWithHint: true),
                       ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: loc,
+                        decoration: const InputDecoration(labelText: 'Venue'),
+                      ),
                       const SizedBox(height: 16),
                       EventPhotosField(
                           controller: photos, existing: EventPhotoService.photosOf(data)),
@@ -286,6 +293,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
 
     title.dispose();
     desc.dispose();
+    loc.dispose();
   }
 
   // ───────────────────────── DELETE ─────────────────────────
@@ -533,7 +541,10 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
               ),
               title: d['title'] as String? ?? '',
               lines: [
-                (d['description'] as String? ?? '').trim(),
+                if ((d['description'] as String? ?? '').trim().isNotEmpty)
+                  (d['description'] as String? ?? '').trim(),
+                if ((d['location'] as String? ?? '').trim().isNotEmpty)
+                  'Venue: ${(d['location'] as String).trim()}',
               ].where((s) => s.isNotEmpty).toList(),
               onEdit: () => _openAnnouncementForm(doc: doc),
               onDelete: () => _confirmDelete(doc, 'upcoming event'),

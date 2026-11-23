@@ -170,8 +170,7 @@ class _EventsScreenState extends State<EventsScreen>
       behavior: HitTestBehavior.opaque,
       onTap: photos.isEmpty
           ? null
-          : () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => EventGalleryScreen(title: title, photos: photos))),
+          : () => openPhotoViewer(context, title, photos),
       child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -227,7 +226,7 @@ class _EventsScreenState extends State<EventsScreen>
           separatorBuilder: (_, __) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final data = docs[index].data() as Map<String, dynamic>;
-            return _buildAnnouncementCard(data);
+            return _buildEventCard(data, context);
           },
         );
       },

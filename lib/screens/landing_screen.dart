@@ -138,8 +138,7 @@ class LandingScreen extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: photos.isEmpty
           ? null
-          : () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => EventGalleryScreen(title: title, photos: photos))),
+          : () => openPhotoViewer(context, title, photos),
       child: Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -72,7 +73,16 @@ class ContactUsScreen extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.phone_outlined, color: AppTheme.navy),
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: AppTheme.navyLight,
+                          backgroundImage: (d['photoBase64'] ?? '').toString().isEmpty
+                              ? null
+                              : MemoryImage(base64Decode(d['photoBase64'].toString())),
+                          child: (d['photoBase64'] ?? '').toString().isEmpty
+                              ? const Icon(Icons.person_outline, color: AppTheme.navy, size: 20)
+                              : null,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(

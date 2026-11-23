@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
@@ -22,10 +25,12 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
     ));
   }
 
-  Future<void> _add() async {
-    final name = TextEditingController();
-    final designation = TextEditingController();
-    final phone = TextEditingController();
+  Future<void> _openForm({DocumentSnapshot? doc}) async {
+    final existing = (doc?.data() as Map<String, dynamic>?) ?? {};
+    final name = TextEditingController(text: (existing['name'] ?? '').toString());
+    final designation = TextEditingController(text: (existing['designation'] ?? '').toString());
+    final phone = TextEditingController(text: (existing['phone'] ?? '').toString());
+    String photo = (existing['photoBase64'] ?? '').toString();
     final formKey = GlobalKey<FormState>();
     bool saving = false;
     await showDialog(
@@ -37,14 +42,22 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
             if (!formKey.currentState!.validate()) return;
             setLocal(() => saving = true);
             try {
-              await _db.collection('contacts').add({
+              final payload = {
                 'name': name.text.trim(),
                 'designation': designation.text.trim(),
                 'phone': phone.text.trim(),
-                'createdAt': FieldValue.serverTimestamp(),
-              });
+                'photoBase64': photo,
+              };
+              if (doc == null) {
+                await _db.collection('contacts').add({
+                  ...payload,
+                  'createdAt': FieldValue.serverTimestamp(),
+                });
+              } else {
+                await doc.reference.update(payload);
+              }
               if (dialogContext.mounted) Navigator.pop(dialogContext);
-              _snack('Contact added');
+              _snack(doc == null ? 'Contact added' : 'Contact updated');
             } catch (e) {
               setLocal(() => saving = false);
               _snack('Could not save: $e', error: true);
@@ -53,7 +66,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
 
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Add Contact',
+            title: Text(doc == null ? 'Add Contact' : 'Edit Contact',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.navy)),
             content: SizedBox(
               width: 420,
@@ -62,6 +75,45 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28,
+                          backgroundColor: AppTheme.navyLight,
+                          backgroundImage:
+                              photo.isEmpty ? null : MemoryImage(base64Decode(photo)),
+                          child: photo.isEmpty
+                              ? const Icon(Icons.person_outline, color: AppTheme.navy)
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        TextButton.icon(
+                          onPressed: () async {
+                            final x = await ImagePicker().pickImage(
+                                source: ImageSource.gallery,
+                                maxWidth: 240,
+                                maxHeight: 240,
+                                imageQuality: 70);
+                            if (x == null) return;
+                            final Uint8List bytes = await x.readAsBytes();
+                            if (bytes.length > 60 * 1024) {
+                              _snack('Photo is too large. Please pick a smaller one.', error: true);
+                              return;
+                            }
+                            setLocal(() => photo = base64Encode(bytes));
+                          },
+                          icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                          label: Text(photo.isEmpty ? 'Add photo' : 'Change'),
+                        ),
+                        if (photo.isNotEmpty)
+                          IconButton(
+                            onPressed: () => setLocal(() => photo = ''),
+                            icon: const Icon(Icons.close, size: 18),
+                            tooltip: 'Remove photo',
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: name,
                       textCapitalization: TextCapitalization.words,
@@ -163,7 +215,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
-        onPressed: _add,
+        onPressed: () => _openForm(),
         icon: const Icon(Icons.add),
         label: const Text('Add Contact'),
       ),
@@ -212,7 +264,16 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.phone_outlined, color: AppTheme.navy),
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppTheme.navyLight,
+                      backgroundImage: (d['photoBase64'] ?? '').toString().isEmpty
+                          ? null
+                          : MemoryImage(base64Decode(d['photoBase64'].toString())),
+                      child: (d['photoBase64'] ?? '').toString().isEmpty
+                          ? const Icon(Icons.person_outline, color: AppTheme.navy, size: 20)
+                          : null,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -229,6 +290,11 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                               style: const TextStyle(fontSize: 13, color: Color(0xFFD32F2F))),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      onPressed: () => _openForm(doc: docs[i]),
+                      icon: const Icon(Icons.edit_outlined, color: AppTheme.navy),
+                      tooltip: 'Edit',
                     ),
                     IconButton(
                       onPressed: () => _delete(docs[i]),

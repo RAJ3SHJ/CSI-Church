@@ -165,7 +165,14 @@ class _EventsScreenState extends State<EventsScreen>
     final description = (data['description'] as String? ?? '').trim();
     final venue = (data['location'] as String? ?? '').trim();
 
-    return Container(
+    final photos = EventPhotoService.photosOf(data);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: photos.isEmpty
+          ? null
+          : () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => EventGalleryScreen(title: title, photos: photos))),
+      child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -192,10 +199,10 @@ class _EventsScreenState extends State<EventsScreen>
                 style: const TextStyle(fontSize: 14,
                     color: AppTheme.textSecondary, height: 1.4)),
           ],
-          PhotosChip(title: title, photos: EventPhotoService.photosOf(data)),
+          PhotosChip(title: title, photos: photos),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildAnnouncementsTab() {

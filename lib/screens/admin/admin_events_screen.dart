@@ -62,6 +62,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
         TextEditingController(text: data['description'] as String? ?? '');
     final loc = TextEditingController(text: data['location'] as String? ?? '');
     final formKey = GlobalKey<FormState>();
+    final photos = EventPhotosController();
     bool saving = false;
 
     await showDialog(
@@ -78,17 +79,20 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                 'description': desc.text.trim(),
                 'location': loc.text.trim(),
               };
+              DocumentReference<Map<String, dynamic>> ref;
               if (doc == null) {
-                await _db.collection(collection).add({
+                ref = await _db.collection(collection).add({
                   ...payload,
                   'createdAt': FieldValue.serverTimestamp(),
                 });
               } else {
-                await doc.reference.update({
+                ref = doc.reference as DocumentReference<Map<String, dynamic>>;
+                await ref.update({
                   ...payload,
                   'updatedAt': FieldValue.serverTimestamp(),
                 });
               }
+              if (photos.hasChanges) await photos.applyTo(ref);
               if (dialogContext.mounted) Navigator.pop(dialogContext);
               _snack(doc == null ? '$noun added' : '$noun updated');
             } catch (e) {
@@ -133,6 +137,9 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                         controller: loc,
                         decoration: const InputDecoration(labelText: 'Venue'),
                       ),
+                      const SizedBox(height: 16),
+                      EventPhotosField(
+                          controller: photos, existing: EventPhotoService.photosOf(data)),
                     ],
                   ),
                 ),
@@ -175,6 +182,7 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
     final desc =
         TextEditingController(text: data['description'] as String? ?? '');
     final formKey = GlobalKey<FormState>();
+    final photos = EventPhotosController();
     bool saving = false;
 
     await showDialog(
@@ -190,17 +198,20 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                 'title': title.text.trim(),
                 'description': desc.text.trim(),
               };
+              DocumentReference<Map<String, dynamic>> ref;
               if (doc == null) {
-                await _db.collection('announcements').add({
+                ref = await _db.collection('announcements').add({
                   ...payload,
                   'createdAt': FieldValue.serverTimestamp(),
                 });
               } else {
-                await doc.reference.update({
+                ref = doc.reference as DocumentReference<Map<String, dynamic>>;
+                await ref.update({
                   ...payload,
                   'updatedAt': FieldValue.serverTimestamp(),
                 });
               }
+              if (photos.hasChanges) await photos.applyTo(ref);
               if (dialogContext.mounted) Navigator.pop(dialogContext);
               _snack(doc == null
                   ? 'Upcoming event posted'
@@ -241,6 +252,9 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                         decoration: const InputDecoration(
                             labelText: 'Message', alignLabelWithHint: true),
                       ),
+                      const SizedBox(height: 16),
+                      EventPhotosField(
+                          controller: photos, existing: EventPhotoService.photosOf(data)),
                     ],
                   ),
                 ),
@@ -473,13 +487,6 @@ class _AdminEventsScreenState extends State<AdminEventsScreen>
                   collection: collection,
                   noun: '${noun[0].toUpperCase()}${noun.substring(1)}'),
               onDelete: () => _confirmDelete(doc, noun),
-              photoCount: EventPhotoService.photosOf(d).length,
-              onPhotos: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => AdminEventPhotosScreen(
-                          eventRef: doc.reference as DocumentReference<Map<String, dynamic>>,
-                          title: (d['title'] as String? ?? '')))),
             );
           },
         );

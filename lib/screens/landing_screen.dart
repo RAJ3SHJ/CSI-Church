@@ -134,7 +134,13 @@ class LandingScreen extends StatelessWidget {
 
   Widget _card(BuildContext context, String title, String desc, String venue,
       List<Map<String, dynamic>> photos) {
-    return Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: photos.isEmpty
+          ? null
+          : () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => EventGalleryScreen(title: title, photos: photos))),
+      child: Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
@@ -164,7 +170,7 @@ class LandingScreen extends StatelessWidget {
           PhotosChip(title: title, photos: photos),
         ],
       ),
-    );
+    ));
   }
 
   Widget _header(BuildContext context) {

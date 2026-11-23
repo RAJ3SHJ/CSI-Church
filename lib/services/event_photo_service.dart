@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -42,6 +43,20 @@ class EventPhotoService {
       onProgress?.call(done, files.length);
     }
     return done;
+  }
+
+  static Future<void> uploadBytes(
+      DocumentReference<Map<String, dynamic>> eventRef, Uint8List bytes, int index) async {
+    final path =
+        'events/${eventRef.parent.id}_${eventRef.id}/${DateTime.now().microsecondsSinceEpoch}_$index.jpg';
+    final ref = FirebaseStorage.instance.ref(path);
+    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+    final url = await ref.getDownloadURL();
+    await eventRef.update({
+      'photos': FieldValue.arrayUnion([
+        {'url': url, 'path': path}
+      ])
+    });
   }
 
   static Future<void> remove(

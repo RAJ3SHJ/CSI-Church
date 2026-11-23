@@ -174,9 +174,9 @@ class _ReportsScreenState extends State<ReportsScreen>
                 style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Table.fromTextArray(
-              headers: ['Member', 'ID', 'Total', 'Transactions'],
+              headers: ['Member', 'Total', 'Transactions'],
               data: _topMembers.map((m) => [
-                m['name'], m['id'],
+                m['name'],
                 _formatAmount(m['amount'] as double),
                 '${m['count']}',
               ]).toList(),
@@ -564,7 +564,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                         style: const TextStyle(fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary)),
-                    Text('${member['id']} · ${member['count']} transactions',
+                    Text('${member['count']} transactions',
                         style: const TextStyle(fontSize: 12,
                             color: AppTheme.textSecondary)),
                   ],

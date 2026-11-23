@@ -622,7 +622,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   Text(name,
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
                           color: AppTheme.textPrimary)),
-                  Text(donation['id'] as String,
+                  Text((donation['category'] ?? '').toString(),
                       style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 ],
               ),

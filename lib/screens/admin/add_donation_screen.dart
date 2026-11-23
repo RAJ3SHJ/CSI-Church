@@ -27,6 +27,7 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
   bool _isSearching = false;
   String _foundMemberName = '';
   String _foundMemberId = '';
+  String _foundMemberPhone = '';
   List<String> _categories = ['Tithe', 'Offering', 'Building Fund', 'Special Fund', 'Charity', 'Missions'];
   final List<String> _paymentModes = ['Cash', 'UPI', 'Cheque', 'Bank Transfer'];
 
@@ -71,23 +72,49 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
     setState(() { _isSearching = true; _memberFound = false; });
 
     try {
-      final snap = await FirebaseFirestore.instance
-          .collection('members')
-          .where('memberId', isEqualTo: query.trim().toUpperCase())
-          .limit(1)
-          .get();
+      final q = query.trim().toLowerCase();
+      final digits = q.replaceAll(RegExp(r'[^0-9]'), '');
+      final snap = await FirebaseFirestore.instance.collection('members').get();
+      final matches = snap.docs.where((d) {
+        final m = d.data();
+        final name = (m['name'] ?? '').toString().toLowerCase();
+        final phone = (m['phone'] ?? '').toString().replaceAll(RegExp(r'[^0-9]'), '');
+        return name.contains(q) || (digits.length >= 3 && phone.contains(digits));
+      }).toList();
 
-      if (snap.docs.isNotEmpty) {
-        final data = snap.docs.first.data();
+      Map<String, dynamic>? chosen;
+      if (matches.length == 1) {
+        chosen = matches.first.data();
+      } else if (matches.length > 1 && mounted) {
+        chosen = await showDialog<Map<String, dynamic>>(
+          context: context,
+          builder: (c) => SimpleDialog(
+            title: const Text('Select member',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+            children: [
+              for (final d in matches)
+                SimpleDialogOption(
+                  onPressed: () => Navigator.pop(c, d.data()),
+                  child: Text('${d.data()['name'] ?? ''}  ·  ${d.data()['phone'] ?? ''}',
+                      style: const TextStyle(fontSize: 15)),
+                ),
+            ],
+          ),
+        );
+      }
+
+      if (chosen != null) {
+        final data = chosen;
         setState(() {
           _memberFound = true;
           _foundMemberName = data['name'] ?? '';
+          _foundMemberPhone = (data['phone'] ?? '').toString();
           _foundMemberId = data['memberId'] ?? '';
         });
-      } else {
+      } else if (matches.isEmpty) {
         setState(() { _memberFound = false; _foundMemberName = ''; });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Member not found. Check the Member ID.'),
+          const SnackBar(content: Text('Member not found. Search by name or phone number.'),
               backgroundColor: AppTheme.error),
         );
       }
@@ -216,13 +243,11 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _memberSearchController,
-                          textCapitalization: TextCapitalization.characters,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-                          ],
+                          textCapitalization: TextCapitalization.words,
+                          onFieldSubmitted: (v) => _isSearching ? null : _searchMember(v),
                           decoration: const InputDecoration(
-                            hintText: 'Enter Member ID (CSI-00123)',
-                            prefixIcon: Icon(Icons.badge_outlined, color: AppTheme.navy, size: 20),
+                            hintText: 'Member name or phone number',
+                            prefixIcon: Icon(Icons.person_search_outlined, color: AppTheme.navy, size: 20),
                           ),
                         ),
                       ),
@@ -259,7 +284,7 @@ class _AddDonationScreenState extends State<AddDonationScreen> {
                               Text(_foundMemberName,
                                   style: const TextStyle(fontSize: 14,
                                       fontWeight: FontWeight.w600, color: AppTheme.success)),
-                              Text(_foundMemberId,
+                              Text(_foundMemberPhone,
                                   style: const TextStyle(fontSize: 12, color: AppTheme.success)),
                             ],
                           ),

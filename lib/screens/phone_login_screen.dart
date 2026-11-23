@@ -159,7 +159,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
           for (final m in members)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(c, m),
-              child: Text('${m.data()['name'] ?? ''}  ·  ${m.data()['memberId'] ?? ''}',
+              child: Text((m.data()['name'] ?? '').toString(),
                   style: const TextStyle(fontSize: 15)),
             ),
         ],

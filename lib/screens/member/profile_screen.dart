@@ -128,16 +128,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
           Text(name,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.white)),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text('Member ID: $memberId',
-                style: const TextStyle(fontSize: 13, color: Colors.white70)),
-          ),
         ],
       ),
     );

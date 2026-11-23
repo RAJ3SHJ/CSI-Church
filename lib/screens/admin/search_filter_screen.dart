@@ -65,8 +65,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
     if (!_hasSearched) return [];
     return _allRecords.where((r) {
       final matchesSearch = _searchQuery.isEmpty ||
-          r.memberName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          r.memberId.toLowerCase().contains(_searchQuery.toLowerCase());
+          r.memberName.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesCategory = _selectedCategory == 'All' || r.category == _selectedCategory;
       final matchesMode = _selectedPaymentMode == 'All' || r.paymentMode == _selectedPaymentMode;
       final matchesDate = _selectedDateRange == null ||
@@ -170,7 +169,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
             controller: _searchController,
             onChanged: (value) => setState(() => _searchQuery = value),
             decoration: InputDecoration(
-              hintText: 'Search by name or Member ID...',
+              hintText: 'Search by name...',
               prefixIcon: const Icon(Icons.person_search_outlined, color: AppTheme.navy, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -388,7 +387,7 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                         children: [
                           Text(record.memberName,
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                          Text('${record.memberId} · ${record.category} · ${record.date}',
+                          Text('${record.category} · ${record.date}',
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                           Text('${record.paymentMode} · ${record.receiptNo}',
                               style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),

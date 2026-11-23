@@ -52,13 +52,11 @@ class _MemberListScreenState extends State<MemberListScreen> {
                 final filtered = allMembers.where((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   final name = (data['name'] ?? '').toString().toLowerCase();
-                  final memberId = (data['memberId'] ?? '').toString().toLowerCase();
                   final phone = (data['phone'] ?? '').toString();
                   final isActive = data['isActive'] as bool? ?? true;
 
                   final matchesSearch = _searchQuery.isEmpty ||
                       name.contains(_searchQuery.toLowerCase()) ||
-                      memberId.contains(_searchQuery.toLowerCase()) ||
                       phone.contains(_searchQuery);
 
                   final matchesStatus = _filterStatus == 'All' ||
@@ -143,7 +141,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
             onChanged: (value) => setState(() => _searchQuery = value),
             style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Search by name, member ID or phone...',
+              hintText: 'Search by name or phone number...',
               hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
               prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
@@ -222,7 +220,6 @@ class _MemberListScreenState extends State<MemberListScreen> {
   Widget _buildMemberCard(String docId, Map<String, dynamic> data) {
     final isActive = data['isActive'] as bool? ?? true;
     final name = data['name'] ?? '';
-    final memberId = data['memberId'] ?? '';
     final phone = data['phone'] ?? '';
     final sector = data['sector'] ?? '';
 
@@ -250,9 +247,6 @@ class _MemberListScreenState extends State<MemberListScreen> {
                 Text(name,
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary)),
-                const SizedBox(height: 3),
-                Text(memberId,
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                 const SizedBox(height: 3),
                 Text(
                     data['phoneVerified'] == true
@@ -355,7 +349,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
 
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text('Edit $memberId',
+            title: const Text('Edit Member',
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.navy)),
             content: SizedBox(
@@ -464,7 +458,7 @@ class _MemberListScreenState extends State<MemberListScreen> {
             const SizedBox(height: 16),
             Text(data['name'] ?? '',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-            Text(data['memberId'] ?? '',
+            Text((data['phone'] ?? '').toString(),
                 style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
             const SizedBox(height: 20),
             _optionTile(
@@ -664,35 +658,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         key: _formKey,
         child: Column(
           children: [
-            // Auto-generated Member ID
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.navyLight,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.border),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Icon(Icons.badge_outlined, color: AppTheme.navy, size: 22),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Member ID (Auto-generated)',
-                          style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-                      const SizedBox(height: 3),
-                      Text(
-                        _generatedMemberId.isEmpty ? 'Loading...' : _generatedMemberId,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700,
-                            color: AppTheme.navy, letterSpacing: 2),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
 
             // Form fields
             Container(
@@ -811,22 +776,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             Text('$_submittedName has been added successfully.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 15, color: AppTheme.textSecondary, height: 1.5)),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  color: AppTheme.navyLight, borderRadius: BorderRadius.circular(16)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Member ID: ',
-                      style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
-                  Text(_generatedMemberId,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700,
-                          color: AppTheme.navy, letterSpacing: 2)),
-                ],
-              ),
-            ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),

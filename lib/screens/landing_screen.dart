@@ -189,53 +189,41 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Pastor on the left (photo, then name and title), logins on the right
+                // Login links on top, right aligned
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => kPhoneLoginEnabled
+                                  ? const PhoneLoginScreen()
+                                  : const LoginScreen())),
+                      child: const Text('Member Login →',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                          context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
+                      child: const Text('Admin Login →',
+                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Pastors side by side: round photo, then name and title below
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1)),
-                            child: ClipOval(
-                              child: Image.asset('assets/images/pastor.jpg',
-                                  width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text('Rev. M. George Ebenezer Raju',
-                              style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
-                          const Text('Presbyter-in-Charge & Chairman, MDCC',
-                              style: TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
-                        ],
-                      ),
+                      child: _pastor('assets/images/pastor.jpg', 'Rev. M. George Ebenezer Raju',
+                          const ['Presbyter-in-Charge & Chairman, MDCC']),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => kPhoneLoginEnabled
-                                      ? const PhoneLoginScreen()
-                                      : const LoginScreen())),
-                          child: const Text('Member Login →',
-                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                              context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
-                          child: const Text('Admin Login →',
-                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                        ),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
+                          const ['Assistant Presbyter Sangareddy', 'B. Tech., BD']),
                     ),
                   ],
                 ),
@@ -244,6 +232,29 @@ class LandingScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _pastor(String asset, String name, List<String> lines) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1)),
+          child: ClipOval(
+            child: Image.asset(asset,
+                width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(name, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+        for (final l in lines)
+          Text(l, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+      ],
     );
   }
 }

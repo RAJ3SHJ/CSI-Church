@@ -1,3 +1,4 @@
+import '../../services/push_service.dart';
 import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -18,6 +19,12 @@ class SuperAdminDashboardScreen extends StatefulWidget {
 
 class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PushService.register('admin');
+  }
 
   final List<Map<String, dynamic>> _auditLog = [
     {'action': 'Donation edited', 'admin': 'Admin Alex', 'detail': 'RC-0088', 'time': '2h ago', 'type': 'edit'},

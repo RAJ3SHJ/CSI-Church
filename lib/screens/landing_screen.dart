@@ -179,13 +179,10 @@ class LandingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Church photo: full width, whole picture visible (no crop)
-          Container(
+          // Header banner: full width, whole picture visible (no crop)
+          SizedBox(
             width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: _lavender, width: 4),
-            ),
-            child: Image.asset('assets/images/church.jpg', fit: BoxFit.fitWidth),
+            child: Image.asset('assets/images/banner.jpg', fit: BoxFit.fitWidth),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),

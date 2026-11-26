@@ -1,3 +1,4 @@
+import '../../services/push_service.dart';
 import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,6 +34,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    PushService.register('admin');
     _loadStats();
     _loadRecentDonations();
   }

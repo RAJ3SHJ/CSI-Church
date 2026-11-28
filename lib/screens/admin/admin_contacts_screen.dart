@@ -14,8 +14,16 @@ class AdminContactsScreen extends StatefulWidget {
   State<AdminContactsScreen> createState() => _AdminContactsScreenState();
 }
 
-class _AdminContactsScreenState extends State<AdminContactsScreen> {
+class _AdminContactsScreenState extends State<AdminContactsScreen> with SingleTickerProviderStateMixin {
   final _db = FirebaseFirestore.instance;
+  late final TabController _tabs = TabController(length: 2, vsync: this)..addListener(() => setState(() {}));
+  String get _group => _tabs.index == 0 ? 'office' : 'media';
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
 
   void _snack(String msg, {bool error = false}) {
     if (!mounted) return;
@@ -25,7 +33,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
     ));
   }
 
-  Future<void> _openForm({DocumentSnapshot? doc}) async {
+  Future<void> _openForm({DocumentSnapshot? doc, String group = 'office'}) async {
     final existing = (doc?.data() as Map<String, dynamic>?) ?? {};
     final name = TextEditingController(text: (existing['name'] ?? '').toString());
     final designation = TextEditingController(text: (existing['designation'] ?? '').toString());
@@ -47,6 +55,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                 'designation': designation.text.trim(),
                 'phone': phone.text.trim(),
                 'photoBase64': photo,
+                'group': doc == null ? group : (existing['group'] ?? 'office'),
               };
               if (doc == null) {
                 await _db.collection('contacts').add({
@@ -126,7 +135,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
                       controller: designation,
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
-                          labelText: 'Designation *', hintText: 'e.g. Secretary, Treasurer'),
+                          labelText: group == 'media' ? 'Role *' : 'Designation *', hintText: group == 'media' ? 'e.g. Sound, Camera, Live' : 'e.g. Secretary, Treasurer'),
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? 'Designation is required' : null,
                     ),
@@ -211,13 +220,20 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
         title: const Text('Contact Us (Master)', style: TextStyle(fontSize: 16)),
+        bottom: TabBar(
+          controller: _tabs,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [Tab(text: 'Office Bearers'), Tab(text: 'Media Support')],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
-        onPressed: () => _openForm(),
+        onPressed: () => _openForm(group: _group),
         icon: const Icon(Icons.add),
-        label: const Text('Add Contact'),
+        label: Text(_tabs.index == 0 ? 'Add Office Bearer' : 'Add Media Support'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _db.collection('contacts').snapshots(),
@@ -231,7 +247,11 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
           if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator(color: AppTheme.navy));
           }
-          final docs = [...snap.data!.docs]..sort((a, b) {
+          final docs = snap.data!.docs.where((x) {
+            final g = ((x.data() as Map<String, dynamic>)['group'] ?? 'office').toString();
+            return g == _group;
+          }).toList()
+            ..sort((a, b) {
               final ta = (a.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
               final tb = (b.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
               if (ta == null && tb == null) return 0;
@@ -243,7 +263,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: Text('No contacts yet.\nTap "Add Contact" to add one.',
+                child: Text('Nothing here yet.\nTap the button below to add one.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.5)),
               ),

@@ -3,6 +3,7 @@ import 'event_gallery_screen.dart';
 import '../services/member_session.dart';
 import 'phone_login_screen.dart';
 import 'gallery_section.dart';
+import 'history_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -204,6 +205,27 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Our History link
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                    onTap: () => Navigator.push(
+                        context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
+                    child: const Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.history_edu_outlined, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('Our History',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white)),
+                      ]),
+                    ),
+                  ),
+                ),
                 // Pastors side by side
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

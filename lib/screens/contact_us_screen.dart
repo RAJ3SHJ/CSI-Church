@@ -11,17 +11,39 @@ class ContactUsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         backgroundColor: AppTheme.navy,
         foregroundColor: AppTheme.white,
         title: const Text('Contact Us', style: TextStyle(fontSize: 18)),
+        bottom: const TabBar(
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: [
+            Tab(icon: Icon(Icons.groups_outlined), text: 'Office Bearers'),
+            Tab(icon: Icon(Icons.perm_camera_mic_outlined), text: 'Media Support'),
+          ],
+        ),
       ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
-          child: StreamBuilder<QuerySnapshot>(
+          child: TabBarView(children: [
+            _list('office'),
+            _list('media'),
+          ]),
+        ),
+      ),
+    ));
+  }
+
+  Widget _list(String group) {
+    return Builder(builder: (context) {
+      return StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('contacts').snapshots(),
             builder: (context, snap) {
               if (snap.hasError) {
@@ -30,7 +52,11 @@ class ContactUsScreen extends StatelessWidget {
               if (!snap.hasData) {
                 return const Center(child: CircularProgressIndicator(color: AppTheme.navy));
               }
-              final docs = [...snap.data!.docs]..sort((a, b) {
+              final docs = snap.data!.docs.where((x) {
+                final g = ((x.data() as Map<String, dynamic>)['group'] ?? 'office').toString();
+                return g == group;
+              }).toList()
+                ..sort((a, b) {
                   final ta = (a.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
                   final tb = (b.data() as Map<String, dynamic>)['createdAt'] as Timestamp?;
                   if (ta == null && tb == null) return 0;
@@ -43,26 +69,10 @@ class ContactUsScreen extends StatelessWidget {
               }
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: docs.length + 1,
+                itemCount: docs.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, idx) {
-                  if (idx == 0) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 4, bottom: 2),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Office Bearers',
-                            style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                color: _red,
-                                decoration: TextDecoration.underline,
-                                decorationColor: _red,
-                                decorationThickness: 2)),
-                      ),
-                    );
-                  }
-                  final i = idx - 1;
+                  final i = idx;
                   final d = docs[i].data() as Map<String, dynamic>;
                   return Container(
                     padding: const EdgeInsets.all(14),
@@ -113,9 +123,7 @@ class ContactUsScreen extends StatelessWidget {
                 },
               );
             },
-          ),
-        ),
-      ),
-    );
+      );
+    });
   }
 }

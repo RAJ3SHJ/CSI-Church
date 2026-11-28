@@ -164,25 +164,46 @@ class LandingScreen extends StatelessWidget {
           const BoxShadow(color: Colors.white, blurRadius: 4, offset: Offset(-2, -2)),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (title.isNotEmpty)
-            Text(title,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-          if (desc.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Text(desc,
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (title.isNotEmpty)
+                  Text(title,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                if (desc.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(desc,
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
+                  ),
+                if (venue.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text('Venue: $venue',
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
+                  ),
+              ],
             ),
-          if (venue.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Text('Venue: $venue',
-                  style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
+          ),
+          if (photos.isNotEmpty) ...[
+            const SizedBox(width: 10),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(width: 56, height: 56, child: networkPhoto(photos.first['url'].toString())),
+                ),
+                const SizedBox(height: 3),
+                Text('${photos.length} photo${photos.length == 1 ? '' : 's'} ›',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+              ],
             ),
-          PhotosChip(title: title, photos: photos),
+          ],
         ],
       ),
     ));
@@ -205,24 +226,20 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Our History link
+                // Our History link (centered, text only)
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.center,
                   child: InkWell(
                     onTap: () => Navigator.push(
                         context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
                     child: const Padding(
                       padding: EdgeInsets.only(bottom: 10),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.history_edu_outlined, color: Colors.white, size: 14),
-                        SizedBox(width: 4),
-                        Text('Our History',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.white)),
-                      ]),
+                      child: Text('Our History',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white)),
                     ),
                   ),
                 ),

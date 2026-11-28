@@ -176,7 +176,7 @@ class _MemberCardScreenState extends State<MemberCardScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
             children: [
-              Text('${widget.memberName} · ${widget.memberId}',
+              Text(widget.memberName,
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.navy)),
               const SizedBox(height: 4),
               const Text('Several cards per year are allowed (Father, Mother, Wife...). Once a financial year is over it is closed: cards can be viewed but not added or changed.',

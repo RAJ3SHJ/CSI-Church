@@ -86,16 +86,18 @@ class _AdminGalleryScreenState extends State<AdminGalleryScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Row(
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                ElevatedButton.icon(
+                FilledButton.icon(
                   onPressed: _busy ? null : _upload,
                   icon: const Icon(Icons.add_photo_alternate_outlined),
                   label: Text('Add photos to ${GalleryService.labelOf(_cat)}'),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.navy, foregroundColor: Colors.white),
+                  style: FilledButton.styleFrom(backgroundColor: AppTheme.navy),
                 ),
-                const SizedBox(width: 12),
-                if (_progress.isNotEmpty) Flexible(child: Text(_progress)),
+                if (_progress.isNotEmpty) Text(_progress),
               ],
             ),
           ),

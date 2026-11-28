@@ -130,17 +130,21 @@ class LandingScreen extends StatelessWidget {
                 return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
               }).toList();
             if (cards.isEmpty) return const SizedBox.shrink();
-            return LayoutBuilder(builder: (context, c) {
-              const gap = 10.0;
-              final w = (c.maxWidth - gap) / 2;
-              return Wrap(
-                spacing: gap,
-                runSpacing: 4,
-                children: [
-                  for (final card in cards) SizedBox(width: w, child: card),
-                ],
-              );
-            });
+            return Column(
+              children: [
+                for (var i = 0; i < cards.length; i += 2)
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: cards[i]),
+                        const SizedBox(width: 10),
+                        Expanded(child: i + 1 < cards.length ? cards[i + 1] : const SizedBox.shrink()),
+                      ],
+                    ),
+                  ),
+              ],
+            );
           },
         ),
       ],
@@ -156,7 +160,8 @@ class LandingScreen extends StatelessWidget {
           : () => openPhotoViewer(context, title, photos),
       child: Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 6),
+      constraints: const BoxConstraints(minHeight: 150),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppTheme.white,
@@ -213,12 +218,12 @@ class LandingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      flex: 4,
+                      flex: 52,
                       child: Image.asset('assets/images/church.jpg', fit: BoxFit.fitWidth),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      flex: 6,
+                      flex: 48,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -249,17 +254,17 @@ class LandingScreen extends StatelessWidget {
           decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
           child: ClipOval(
             child: Image.asset(asset,
-                width: 56, height: 56, fit: BoxFit.cover, alignment: Alignment.topCenter),
+                width: 39, height: 39, fit: BoxFit.cover, alignment: Alignment.topCenter),
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600, height: 1.3)),
+              Text(name, style: const TextStyle(fontSize: 8.5, color: Colors.white, fontWeight: FontWeight.w600, height: 1.3)),
               for (final l in lines)
-                Text(l, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+                Text(l, style: const TextStyle(fontSize: 7.7, color: Colors.white, height: 1.3)),
             ],
           ),
         ),

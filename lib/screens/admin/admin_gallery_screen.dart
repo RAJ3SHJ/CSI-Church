@@ -60,6 +60,13 @@ class _AdminGalleryScreenState extends State<AdminGalleryScreen> {
         foregroundColor: AppTheme.white,
         title: const Text('Gallery', style: TextStyle(fontSize: 18)),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _busy ? null : _upload,
+        backgroundColor: AppTheme.navy,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_photo_alternate_outlined),
+        label: Text(_busy ? 'Uploading...' : 'Add photos'),
+      ),
       body: Column(
         children: [
           Padding(

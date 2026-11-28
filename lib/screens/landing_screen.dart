@@ -30,10 +30,7 @@ class LandingScreen extends StatelessWidget {
               children: [
                 _header(context),
                 const GallerySection(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                  child: _twoColumns(),
-                ),
+                _twoColumns(),
                 // Bottom band: Contact Us + logins with icons
                 Container(
                   width: double.infinity,
@@ -70,48 +67,104 @@ class LandingScreen extends StatelessWidget {
         ),
       );
 
-  Widget _boxed(Widget child) => Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          border: Border.all(color: _lavender, width: 2),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: child,
-      );
+  static const Color _deep = Color(0xFF2A0F4D);
 
   Widget _twoColumns() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _boxed(_column('Events', 'events', newestFirst: false)),
-        const SizedBox(height: 16),
-        _boxed(_column('Upcoming Events', 'announcements', newestFirst: true)),
-        const SizedBox(height: 16),
-        _boxed(_column('Announcements', 'notices', newestFirst: true)),
-      ],
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF5B2C83), Color(0xFF3A1767), _deep],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // church picture fading into the background, top right
+          Positioned(
+            top: 0,
+            right: 0,
+            child: ShaderMask(
+              shaderCallback: (r) => const LinearGradient(
+                begin: Alignment.centerRight,
+                end: Alignment.centerLeft,
+                colors: [Colors.white, Colors.transparent],
+              ).createShader(r),
+              blendMode: BlendMode.dstIn,
+              child: Image.asset('assets/images/church.jpg', width: 190, fit: BoxFit.fitWidth),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _column('Events', 'events', Icons.event_outlined, newestFirst: false),
+                const SizedBox(height: 22),
+                _column('Upcoming Events', 'announcements', Icons.event_available_outlined, newestFirst: true),
+                const SizedBox(height: 22),
+                _column('Announcements', 'notices', Icons.campaign_outlined, newestFirst: true),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _column(String heading, String collection, {required bool newestFirst}) {
+  Widget _sectionTitle(String heading, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white, width: 1.6),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Text(heading,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.5)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            width: 90,
+            height: 3,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2),
+              gradient: const LinearGradient(colors: [Color(0xFFB98CE8), Color(0x00B98CE8)]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _column(String heading, String collection, IconData defaultIcon, {required bool newestFirst}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(heading,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-        ),
+        _sectionTitle(heading, defaultIcon),
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance.collection(collection).snapshots(),
           builder: (context, snap) {
             if (snap.hasError) {
               return const Text('Could not load right now.',
-                  style: TextStyle(fontSize: 11, color: AppTheme.textSecondary));
+                  style: TextStyle(fontSize: 11, color: Colors.white70));
             }
             if (!snap.hasData) {
               return const Padding(
                 padding: EdgeInsets.all(12),
-                child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))),
               );
             }
             final docs = [...snap.data!.docs]..sort((a, b) {
@@ -128,7 +181,7 @@ class LandingScreen extends StatelessWidget {
                 final desc = (m['description'] ?? '').toString().trim();
                 final venue = (m['location'] ?? '').toString().trim();
                 if (title.isEmpty && desc.isEmpty && venue.isEmpty) return const SizedBox.shrink();
-                return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
+                return _card(context, title, desc, venue, EventPhotoService.photosOf(m), defaultIcon);
               }).toList();
             if (cards.isEmpty) return const SizedBox.shrink();
             return Column(children: cards);
@@ -138,75 +191,113 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
+  IconData _iconFor(String title, IconData fallback) {
+    final t = title.toLowerCase();
+    bool has(List<String> k) => k.any(t.contains);
+    if (has(['christmas', 'carol', 'nativity', 'advent'])) return Icons.auto_awesome;
+    if (has(['sunday school', 'school', 'kids', 'children', 'vbs'])) return Icons.menu_book_outlined;
+    if (has(['women', 'ladies', 'mother'])) return Icons.face_3_outlined;
+    if (has(['youth', 'young', 'fellowship', 'group'])) return Icons.groups_outlined;
+    if (has(['prayer', 'intercession'])) return Icons.volunteer_activism_outlined;
+    if (has(['choir', 'music', 'song'])) return Icons.music_note_outlined;
+    if (has(['service', 'worship', 'mass', 'communion', 'church'])) return Icons.church_outlined;
+    return fallback;
+  }
+
   Widget _card(BuildContext context, String title, String desc, String venue,
-      List<Map<String, dynamic>> photos) {
+      List<Map<String, dynamic>> photos, IconData fallbackIcon) {
+    const ink = Color(0xFF4A1A7A);
+    Widget line(IconData i, String text) => Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(i, size: 15, color: ink),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(text,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF2B1B3F), height: 1.25)),
+              ),
+            ],
+          ),
+        );
+    final divider = Container(width: 1, margin: const EdgeInsets.symmetric(horizontal: 12), color: ink.withOpacity(0.25));
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: photos.isEmpty
-          ? null
-          : () => openPhotoViewer(context, title, photos),
+      onTap: photos.isEmpty ? null : () => openPhotoViewer(context, title, photos),
       child: Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 110),
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xFFEFE6F7)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _lavender.withOpacity(0.55), width: 1.2),
-        boxShadow: [
-          BoxShadow(color: _lavender.withOpacity(0.40), blurRadius: 16, offset: const Offset(0, 9)),
-          BoxShadow(color: _lavender.withOpacity(0.35), blurRadius: 0, offset: const Offset(0, 4)),
-          const BoxShadow(color: Colors.white, blurRadius: 4, offset: Offset(-2, -2)),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (title.isNotEmpty)
-                  Text(title,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.navy)),
-                if (desc.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Text(desc,
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
-                  ),
-                if (venue.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Text('Venue: $venue',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
-                  ),
-              ],
-            ),
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 84),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF7F1FD), Color(0xFFDCCBF2)],
           ),
-          if (photos.isNotEmpty) ...[
-            const SizedBox(width: 10),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox(width: 56, height: 56, child: networkPhoto(photos.first['url'].toString())),
-                ),
-                const SizedBox(height: 3),
-                Text('${photos.length} photo${photos.length == 1 ? '' : 's'} ›',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.navy)),
-              ],
-            ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.8), width: 1),
+          boxShadow: const [
+            BoxShadow(color: Color(0x66000000), blurRadius: 16, offset: Offset(0, 8)),
+            BoxShadow(color: Color(0x33FFFFFF), blurRadius: 4, offset: Offset(-1, -1)),
           ],
-        ],
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.white, Color(0xFFE6D8F6)]),
+                    boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 6, offset: Offset(0, 3))],
+                  ),
+                  child: Icon(_iconFor(title, fallbackIcon), size: 30, color: ink),
+                ),
+              ),
+              divider,
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (title.isNotEmpty)
+                      Text(title,
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink)),
+                    if (desc.isNotEmpty) line(Icons.schedule, desc),
+                    if (venue.isNotEmpty) line(Icons.location_on, 'Venue: $venue'),
+                  ],
+                ),
+              ),
+              if (photos.isNotEmpty) ...[
+                divider,
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(width: 52, height: 52, child: networkPhoto(photos.first['url'].toString())),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('${photos.length} photo${photos.length == 1 ? '' : 's'} ›',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 
   Widget _header(BuildContext context) {

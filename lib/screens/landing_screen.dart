@@ -214,7 +214,7 @@ class LandingScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
-                          const ['Assistant Presbyter Sangareddy', 'B. Tech., BD']),
+                          const ['Asst. Presbyter Sangareddy', 'B. Tech., BD']),
                     ),
                   ],
                 ),

@@ -130,26 +130,7 @@ class LandingScreen extends StatelessWidget {
                 return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
               }).toList();
             if (cards.isEmpty) return const SizedBox.shrink();
-            return LayoutBuilder(builder: (context, c) {
-              final cw = (c.maxWidth / 1.5 - 10).clamp(150.0, 280.0);
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: const EdgeInsets.only(bottom: 12),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final card in cards)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: SizedBox(width: cw, child: card),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            });
+            return Column(children: cards);
           },
         ),
       ],
@@ -165,8 +146,8 @@ class LandingScreen extends StatelessWidget {
           : () => openPhotoViewer(context, title, photos),
       child: Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 150),
-      margin: const EdgeInsets.only(bottom: 8),
+      constraints: const BoxConstraints(minHeight: 110),
+      margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         gradient: const LinearGradient(

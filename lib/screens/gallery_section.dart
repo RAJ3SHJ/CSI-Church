@@ -27,27 +27,23 @@ class GallerySection extends StatelessWidget {
         if (all.isEmpty) return const SizedBox.shrink();
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20),
           color: AppTheme.navyLight,
-          child: LayoutBuilder(builder: (context, c) {
-            final w = ((c.maxWidth - 28 - 3 * 14) / 4).clamp(150.0, 400.0);
-            final keys = GalleryService.categories.keys.toList();
-            return SizedBox(
-              height: 210,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                itemCount: keys.length,
-                itemBuilder: (context, i) => _tile(context, keys[i], all, w, i),
-              ),
-            );
-          }),
+          padding: const EdgeInsets.fromLTRB(10, 18, 10, 8),
+          child: SizedBox(
+            height: 190,
+            child: Row(
+              children: [
+                for (var i = 0; i < GalleryService.categories.length; i++)
+                  Expanded(child: _tile(context, GalleryService.categories.keys.elementAt(i), all, i)),
+              ],
+            ),
+          ),
         );
       },
     );
   }
 
-  Widget _tile(BuildContext context, String key, List<Map<String, dynamic>> all, double width, int index) {
+  Widget _tile(BuildContext context, String key, List<Map<String, dynamic>> all, int index) {
     final photos = GalleryService.inCategory(all, key);
     final label = GalleryService.categories[key]!;
     return GestureDetector(
@@ -56,8 +52,7 @@ class GallerySection extends StatelessWidget {
           MaterialPageRoute(
               builder: (_) => EventGalleryScreen(title: GalleryService.labelOf(key), photos: photos))),
       child: Container(
-        width: width,
-        margin: const EdgeInsets.only(right: 14, bottom: 10),
+        margin: const EdgeInsets.fromLTRB(4, 0, 4, 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
@@ -79,18 +74,19 @@ class GallerySection extends StatelessWidget {
               ),
               Container(
                 width: double.infinity,
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 54,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 color: _brinjal,
-                child: Row(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(_icons[key], color: Colors.white, size: 22),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(label.toUpperCase(),
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700, height: 1.25, letterSpacing: 0.4)),
-                    ),
+                    Icon(_icons[key], color: Colors.white, size: 16),
+                    const SizedBox(height: 2),
+                    Text(label.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.w700, height: 1.15)),
                   ],
                 ),
               ),

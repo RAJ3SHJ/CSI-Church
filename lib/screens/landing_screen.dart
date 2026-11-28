@@ -130,21 +130,26 @@ class LandingScreen extends StatelessWidget {
                 return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
               }).toList();
             if (cards.isEmpty) return const SizedBox.shrink();
-            return Column(
-              children: [
-                for (var i = 0; i < cards.length; i += 2)
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(child: cards[i]),
-                        const SizedBox(width: 10),
-                        Expanded(child: i + 1 < cards.length ? cards[i + 1] : const SizedBox.shrink()),
-                      ],
-                    ),
+            return LayoutBuilder(builder: (context, c) {
+              final cw = (c.maxWidth / 1.5 - 10).clamp(150.0, 280.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.only(bottom: 12),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final card in cards)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: SizedBox(width: cw, child: card),
+                        ),
+                    ],
                   ),
-              ],
-            );
+                ),
+              );
+            });
           },
         ),
       ],
@@ -164,12 +169,17 @@ class LandingScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _lavender.withOpacity(0.5)),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFEFE6F7)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _lavender.withOpacity(0.55), width: 1.2),
         boxShadow: [
-          BoxShadow(color: _lavender.withOpacity(0.30), blurRadius: 12, offset: const Offset(0, 6)),
-          const BoxShadow(color: Colors.black26, blurRadius: 3, offset: Offset(0, 2)),
+          BoxShadow(color: _lavender.withOpacity(0.40), blurRadius: 16, offset: const Offset(0, 9)),
+          BoxShadow(color: _lavender.withOpacity(0.35), blurRadius: 0, offset: const Offset(0, 4)),
+          const BoxShadow(color: Colors.white, blurRadius: 4, offset: Offset(-2, -2)),
         ],
       ),
       child: Column(

@@ -130,14 +130,17 @@ class LandingScreen extends StatelessWidget {
                 return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
               }).toList();
             if (cards.isEmpty) return const SizedBox.shrink();
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              padding: const EdgeInsets.only(bottom: 10),
-              child: IntrinsicHeight(
-                child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cards),
-              ),
-            );
+            return LayoutBuilder(builder: (context, c) {
+              const gap = 10.0;
+              final w = (c.maxWidth - gap) / 2;
+              return Wrap(
+                spacing: gap,
+                runSpacing: 4,
+                children: [
+                  for (final card in cards) SizedBox(width: w, child: card),
+                ],
+              );
+            });
           },
         ),
       ],
@@ -152,9 +155,9 @@ class LandingScreen extends StatelessWidget {
           ? null
           : () => openPhotoViewer(context, title, photos),
       child: Container(
-      width: 240,
-      margin: const EdgeInsets.only(right: 14, bottom: 6),
-      padding: const EdgeInsets.all(12),
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppTheme.white,
         borderRadius: BorderRadius.circular(14),
@@ -169,18 +172,18 @@ class LandingScreen extends StatelessWidget {
         children: [
           if (title.isNotEmpty)
             Text(title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.navy)),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.navy)),
           if (desc.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 3),
               child: Text(desc,
-                  style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.3)),
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
             ),
           if (venue.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 3),
               child: Text('Venue: $venue',
-                  style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.3)),
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textPrimary, height: 1.3)),
             ),
           PhotosChip(title: title, photos: photos),
         ],

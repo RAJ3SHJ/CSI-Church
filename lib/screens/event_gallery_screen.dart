@@ -174,8 +174,10 @@ class PhotosChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (photos.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+      padding: const EdgeInsets.only(top: 4),
       child: InkWell(
         onTap: () => openPhotoViewer(context, title, photos),
         borderRadius: BorderRadius.circular(10),
@@ -184,15 +186,15 @@ class PhotosChip extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: SizedBox(width: 56, height: 56, child: networkPhoto(photos.first['url'].toString())),
+              child: SizedBox(width: 40, height: 40, child: networkPhoto(photos.first['url'].toString())),
             ),
             const SizedBox(width: 8),
             Text('${photos.length} photo${photos.length == 1 ? '' : 's'} ›',
                 style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.navy)),
+                    fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.navy)),
           ],
         ),
       ),
-    );
+    ));
   }
 }

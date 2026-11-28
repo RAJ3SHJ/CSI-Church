@@ -31,18 +31,19 @@ class LandingScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   child: _twoColumns(),
                 ),
-                // Bottom band
+                // Bottom band: Contact Us + logins with icons
                 Container(
                   width: double.infinity,
                   color: _lavender,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Center(
-                    child: TextButton(
-                      onPressed: () => Navigator.push(
-                          context, MaterialPageRoute(builder: (_) => const ContactUsScreen())),
-                      child: const Text('Contact Us',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                    ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _bottomBtn(context, Icons.contact_phone_outlined, 'Contact Us', () => const ContactUsScreen()),
+                      _bottomBtn(context, Icons.person_outline, 'Member Login',
+                          () => kPhoneLoginEnabled ? const PhoneLoginScreen() : const LoginScreen()),
+                      _bottomBtn(context, Icons.admin_panel_settings_outlined, 'Admin Login', () => const AdminLoginScreen()),
+                    ],
                   ),
                 ),
               ],
@@ -52,6 +53,19 @@ class LandingScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _bottomBtn(BuildContext context, IconData icon, String label, Widget Function() page) =>
+      InkWell(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page())),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, color: Colors.white, size: 28),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+      );
 
   Widget _boxed(Widget child) => Container(
         padding: const EdgeInsets.all(10),
@@ -189,29 +203,6 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Login links on top, right aligned
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => kPhoneLoginEnabled
-                                  ? const PhoneLoginScreen()
-                                  : const LoginScreen())),
-                      child: const Text('Member Login →',
-                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.push(
-                          context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
-                      child: const Text('Admin Login →',
-                          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 // Pastors side by side: round photo, then name and title below
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

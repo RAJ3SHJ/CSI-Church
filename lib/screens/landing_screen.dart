@@ -204,27 +204,18 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Church picture on the left, pastors stacked on the right
+                // Pastors side by side
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 52,
-                      child: Image.asset('assets/images/church.jpg', fit: BoxFit.fitWidth),
+                      child: _pastor('assets/images/pastor.jpg', 'Rev. M. George Ebenezer Raju',
+                          const ['Presbyter-in-Charge & Chairman, MDCC']),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      flex: 48,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _pastor('assets/images/pastor.jpg', 'Rev. M. George Ebenezer Raju',
-                              const ['Presbyter-in-Charge & Chairman, MDCC']),
-                          const SizedBox(height: 12),
-                          _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
-                              const ['Asst. Presbyter Sangareddy']),
-                        ],
-                      ),
+                      child: _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
+                          const ['Asst. Presbyter Sangareddy']),
                     ),
                   ],
                 ),
@@ -245,7 +236,7 @@ class LandingScreen extends StatelessWidget {
           decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
           child: ClipOval(
             child: Image.asset(asset,
-                width: 39, height: 39, fit: BoxFit.cover, alignment: Alignment.topCenter),
+                width: 52, height: 52, fit: BoxFit.cover, alignment: Alignment.topCenter),
           ),
         ),
         const SizedBox(width: 8),
@@ -253,9 +244,9 @@ class LandingScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(fontSize: 8.5, color: Colors.white, fontWeight: FontWeight.w600, height: 1.3)),
+              Text(name, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w600, height: 1.3)),
               for (final l in lines)
-                Text(l, style: const TextStyle(fontSize: 7.7, color: Colors.white, height: 1.3)),
+                Text(l, style: const TextStyle(fontSize: 10, color: Colors.white, height: 1.3)),
             ],
           ),
         ),

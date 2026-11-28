@@ -134,7 +134,7 @@ class _AdminContactsScreenState extends State<AdminContactsScreen> with SingleTi
                     TextFormField(
                       controller: designation,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                           labelText: group == 'media' ? 'Role *' : 'Designation *', hintText: group == 'media' ? 'e.g. Sound, Camera, Live' : 'e.g. Secretary, Treasurer'),
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? 'Designation is required' : null,

@@ -1,3 +1,4 @@
+import 'admin_gallery_screen.dart';
 import '../../services/push_service.dart';
 import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
@@ -498,6 +499,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {'icon': Icons.notifications_none_outlined, 'label': 'Announcements'},
       {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us'},
       {'icon': Icons.volunteer_activism_outlined, 'label': 'Prayer Requests'},
+      {'icon': Icons.photo_library_outlined, 'label': 'Gallery'},
     ];
 
     return GridView.builder(
@@ -531,6 +533,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
             } else if (label == 'Contact Us') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
+            } else if (label == 'Gallery') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminGalleryScreen()));
             } else if (label == 'Prayer Requests') {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPrayerRequestsScreen()));
             }

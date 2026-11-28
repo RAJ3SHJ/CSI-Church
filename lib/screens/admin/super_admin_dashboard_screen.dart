@@ -1,3 +1,4 @@
+import 'admin_gallery_screen.dart';
 import '../../services/push_service.dart';
 import 'admin_prayer_requests_screen.dart';
 import 'package:flutter/material.dart';
@@ -354,6 +355,7 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
       {'icon': Icons.notifications_none_outlined, 'label': 'Announcements', 'desc': 'Publish for members'},
       {'icon': Icons.contact_phone_outlined, 'label': 'Contact Us', 'desc': 'Names and phone numbers'},
       {'icon': Icons.volunteer_activism_outlined, 'label': 'Prayer Requests', 'desc': 'From members'},
+      {'icon': Icons.photo_library_outlined, 'label': 'Gallery', 'desc': 'Upload photos'},
     ];
 
     return GridView.builder(
@@ -378,6 +380,7 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
             if (index == 6) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminEventsScreen(initialTab: 2)));
             if (index == 7) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminContactsScreen()));
             if (index == 8) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPrayerRequestsScreen()));
+            if (index == 9) Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminGalleryScreen()));
           },
           child: Container(
             padding: const EdgeInsets.all(14),

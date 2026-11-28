@@ -2,6 +2,7 @@ import '../services/event_photo_service.dart';
 import 'event_gallery_screen.dart';
 import '../services/member_session.dart';
 import 'phone_login_screen.dart';
+import 'gallery_section.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -22,11 +23,12 @@ class LandingScreen extends StatelessWidget {
       backgroundColor: AppTheme.background,
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
+          constraints: const BoxConstraints(maxWidth: 900),
           child: SingleChildScrollView(
             child: Column(
               children: [
                 _header(context),
+                const GallerySection(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   child: _twoColumns(),
@@ -77,26 +79,15 @@ class LandingScreen extends StatelessWidget {
       );
 
   Widget _twoColumns() {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: _boxed(_column('Events', 'events', newestFirst: false))),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _boxed(
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _column('Upcoming Events', 'announcements', newestFirst: true),
-                  const SizedBox(height: 16),
-                  _column('Announcements', 'notices', newestFirst: true),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _boxed(_column('Events', 'events', newestFirst: false)),
+        const SizedBox(height: 16),
+        _boxed(_column('Upcoming Events', 'announcements', newestFirst: true)),
+        const SizedBox(height: 16),
+        _boxed(_column('Announcements', 'notices', newestFirst: true)),
+      ],
     );
   }
 
@@ -130,15 +121,22 @@ class LandingScreen extends StatelessWidget {
                 if (tb == null) return -1;
                 return newestFirst ? tb.compareTo(ta) : ta.compareTo(tb);
               });
-            return Column(
-              children: docs.map((d) {
+            final cards = docs.map((d) {
                 final m = d.data() as Map<String, dynamic>;
                 final title = (m['title'] ?? '').toString().trim();
                 final desc = (m['description'] ?? '').toString().trim();
                 final venue = (m['location'] ?? '').toString().trim();
                 if (title.isEmpty && desc.isEmpty && venue.isEmpty) return const SizedBox.shrink();
                 return _card(context, title, desc, venue, EventPhotoService.photosOf(m));
-              }).toList(),
+              }).toList();
+            if (cards.isEmpty) return const SizedBox.shrink();
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              padding: const EdgeInsets.only(bottom: 10),
+              child: IntrinsicHeight(
+                child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cards),
+              ),
             );
           },
         ),
@@ -154,13 +152,17 @@ class LandingScreen extends StatelessWidget {
           ? null
           : () => openPhotoViewer(context, title, photos),
       child: Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      width: 240,
+      margin: const EdgeInsets.only(right: 14, bottom: 6),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppTheme.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: _lavender.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(color: _lavender.withOpacity(0.30), blurRadius: 12, offset: const Offset(0, 6)),
+          const BoxShadow(color: Colors.black26, blurRadius: 3, offset: Offset(0, 2)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

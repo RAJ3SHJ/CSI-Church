@@ -203,18 +203,27 @@ class LandingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Pastors side by side: round photo, then name and title below
+                // Church picture on the left, pastors stacked on the right
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: _pastor('assets/images/pastor.jpg', 'Rev. M. George Ebenezer Raju',
-                          const ['Presbyter-in-Charge & Chairman, MDCC']),
+                      flex: 4,
+                      child: Image.asset('assets/images/church.jpg', fit: BoxFit.fitWidth),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
-                          const ['Asst. Presbyter Sangareddy']),
+                      flex: 6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _pastor('assets/images/pastor.jpg', 'Rev. M. George Ebenezer Raju',
+                              const ['Presbyter-in-Charge & Chairman, MDCC']),
+                          const SizedBox(height: 12),
+                          _pastor('assets/images/pastor2.jpg', 'Rev. B. Sudheer Kumar',
+                              const ['Asst. Presbyter Sangareddy']),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -227,24 +236,28 @@ class LandingScreen extends StatelessWidget {
   }
 
   Widget _pastor(String asset, String name, List<String> lines) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1)),
+          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
           child: ClipOval(
             child: Image.asset(asset,
-                width: 64, height: 64, fit: BoxFit.cover, alignment: Alignment.topCenter),
+                width: 56, height: 56, fit: BoxFit.cover, alignment: Alignment.topCenter),
           ),
         ),
-        const SizedBox(height: 6),
-        Text(name, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
-        for (final l in lines)
-          Text(l, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600, height: 1.3)),
+              for (final l in lines)
+                Text(l, style: const TextStyle(fontSize: 11, color: Colors.white, height: 1.3)),
+            ],
+          ),
+        ),
       ],
     );
   }
